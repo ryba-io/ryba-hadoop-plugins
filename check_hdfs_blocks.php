@@ -22,7 +22,7 @@
  * check_jmx -H hostaddress -p port -w 1% -c 1%
  */
 
-  $options = getopt ("h:H:p:b:s:");
+  $options = getopt ("hH:p:b:s:");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) || 
      !array_key_exists('p', $options) || !array_key_exists('b', $options)) {
     usage();

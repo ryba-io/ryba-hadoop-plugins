@@ -21,7 +21,7 @@
  * check the storage capacity remaining on local datanode storage
  */
 
-  $options = getopt ("h:H:p:w:c:d:x:s:");
+  $options = getopt ("hH:p:w:c:d:x:s:");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
      !array_key_exists('p', $options) || !array_key_exists('w', $options) ||
      !array_key_exists('c', $options) || !array_key_exists('d', $options) ||

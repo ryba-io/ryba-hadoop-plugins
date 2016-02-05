@@ -24,7 +24,7 @@
  * Service Name = JobTracker, NameNode, JobHistoryServer
  */
 
-  $options = getopt ("h:H:p:w:c:n:s:");
+  $options = getopt ("hH:p:w:c:n:s:");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
      !array_key_exists('p', $options) || !array_key_exists('w', $options) ||
      !array_key_exists('c', $options) || !array_key_exists('n', $options)) {
