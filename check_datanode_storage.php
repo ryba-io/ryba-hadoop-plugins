@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,9 +21,8 @@
 /* This plugin makes call to master node, get the jmx-json document
  * check the storage capacity remaining on local datanode storage
  */
-
-  $options = getopt ("hH:p:w:c:s:");
-  if (array_key_exists('H', $options) || !array_key_exists('h', $options) || 
+  $options = getopt ("hH:p:w:c:s");
+  if (array_key_exists('h', $options) || !array_key_exists('H', $options) || 
      !array_key_exists('p', $options) || !array_key_exists('w', $options) || 
      !array_key_exists('c', $options)) {
     usage();
@@ -33,17 +33,14 @@
   $port=$options['p'];
   $warn=$options['w']; $warn = preg_replace('/%$/', '', $warn);
   $crit=$options['c']; $crit = preg_replace('/%$/', '', $crit);
-  $ssl_enabled=$options['e'];
-
-  $protocol = ($ssl_enabled == "true" ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? "https" : "http");
 
   /* Get the json document */
   $ch = curl_init();
-  $username = rtrim(`id -un`, "\n");
   curl_setopt_array($ch, array( CURLOPT_URL => $protocol."://".$host.":".$port."/jmx?qry=Hadoop:service=DataNode,name=FSDatasetState-*",
                                 CURLOPT_RETURNTRANSFER => true,
                                 CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-                                CURLOPT_USERPWD => "$username:",
+                                CURLOPT_USERPWD => ":",
                                 CURLOPT_SSL_VERIFYPEER => FALSE ));
   $json_string = curl_exec($ch);
   $info = curl_getinfo($ch);

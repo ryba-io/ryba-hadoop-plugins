@@ -25,7 +25,7 @@ usage() {
   exit 3;
 }
 
-cmd='curl -f -k'
+cmd='curl -fk'
 host=''
 port=''
 path='/'
