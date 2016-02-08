@@ -22,7 +22,7 @@
  * check_jmx -H hostaddress -p port -k keytab path -r principal name -t kinit path -s security enabled
  */
 
-  $options = getopt("h:H:p:s:");
+  $options = getopt("hH:p:s:");
   //Check only for mandatory options
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) || !array_key_exists('p', $options)) {
     usage();

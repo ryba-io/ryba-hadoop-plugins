@@ -21,18 +21,19 @@
 #
 
 usage() {
-  echo "Usage: check_webui.sh -h help -H <hostname> [-p <port> -u <url_path> -s security_enabled -S SSl_enabled]";
+  echo "Usage: check_http.sh -h help -H <hostname> [-p <port> -u <url_path> -r <response_regex> -s security_enabled -S SSl_enabled]";
   exit 3;
 }
 
-cmd='curl -f -k -o /dev/null'
+cmd='curl -f -k'
 host=''
 port=''
 path='/'
 protocol='http'
 sec=false
+wantedResponse=''
 
-while getopts ":hH:p:u:sS" opt; do
+while getopts ":hH:p:u:r:sS" opt; do
   case $opt in
     h)
       usage
@@ -45,6 +46,9 @@ while getopts ":hH:p:u:sS" opt; do
       ;;
     u)
       path=$OPTARG
+      ;;
+    r)
+      wantedResponse=$OPTARG
       ;;
     s)
       sec=true
@@ -64,13 +68,22 @@ if [ "$sec" = true ]; then
   cmd+=' --negotiate -u:'
 fi
 
-`$cmd $protocol://$host$port$path 2>/dev/null`
+response=`$cmd $protocol://$host$port$path 2>/dev/null`
 ret=$?
 
 if [[ $ret -ne 0 ]]; then
-  echo "CRITICAL: Web UI not accessible";
-  exit 1;
+  echo "CRITICAL: Service not accessible: $response";
+  exit 2;
 fi
 
-echo "OK: Web UI accessible";
+if [[ -n "$wantedResponse" ]]; then
+  if [[ $response =~ $wantedResponse ]]; then
+    echo "OK: Service replies correctly: $response"
+    exit 0;
+  else
+    echo "CRITICAL: Service replies $response"
+    exit 2;
+  fi
+fi
+echo "OK: Service accessible";
 exit 0;
