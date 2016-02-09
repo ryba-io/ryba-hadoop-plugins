@@ -77,6 +77,6 @@
 
   /* print usage */
   function usage () {
-    echo "Usage: $0 -h help -H <host> -p <port> -w <warn%> -c <crit%> -s ssl_enabled\n";
+    echo "Usage: ./check_datanode_storage.php -h help -H <host> -p <port> -w <warn%> -c <crit%> -s ssl_enabled\n";
   }
 ?>

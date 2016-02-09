@@ -71,10 +71,10 @@ fi
 
 if [[ -n "$wantedResponse" ]]; then
   if [[ $response =~ $wantedResponse ]]; then
-    echo "OK: Service replies correctly: $response"
+    echo "OK: Service replies: $response"
     exit 0;
   else
-    echo "CRITICAL: Service replies $response"
+    echo "CRITICAL: Service replies: $response"
     exit 2;
   fi
 fi
