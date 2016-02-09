@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,39 +23,27 @@
  * check_jmx -H hostaddress -p port -w 1% -c 1%
  */
 
-  $options = getopt ("hH:p:b:s:");
+  $options = getopt ("hH:p:j:s");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) || 
-     !array_key_exists('p', $options) || !array_key_exists('b', $options)) {
+     !array_key_exists('p', $options) || !array_key_exists('j', $options)) {
     usage();
     exit(3);
   }
   $hosts=$options['H'];
   $port=$options['p'];
   $nn_jmx_property=$options['j'];
-  $ssl_enabled=$options['s'];
-
-  /* Kinit if security enabled */
-  $status = kinit_if_needed($security_enabled, $kinit_path_local, $keytab_path, $principal_name);
-  $retcode = $status[0];
-  $output = $status[1];
   
-  if ($output != 0) {
-    echo "CRITICAL: Error doing kinit for nagios. $output";
-    exit (2);
-  }
-
-  $protocol = ($ssl_enabled == "true" ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? "https" : "http");
 
 
   foreach (preg_split('/,/', $hosts) as $host) {
     /* Get the json document */
 
     $ch = curl_init();
-    $username = rtrim(`id -un`, "\n");
     curl_setopt_array($ch, array( CURLOPT_URL => $protocol."://".$host.":".$port."/jmx?qry=Hadoop:service=NameNode,name=".$nn_jmx_property,
                                   CURLOPT_RETURNTRANSFER => true,
                                   CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-                                  CURLOPT_USERPWD => "$username:",
+                                  CURLOPT_USERPWD => ":",
                                   CURLOPT_SSL_VERIFYPEER => FALSE ));
     $json_string = curl_exec($ch);
     $info = curl_getinfo($ch);
@@ -92,6 +81,6 @@
 
   /* print usage */
   function usage () {
-    echo "Usage: $0 -h help -H <host> -p <port> -b <namenode bean name> -s ssl_enabled\n";
+    echo "Usage: ./check_hdfs_blocks.php -h help -H <host> -p <port> -j <namenode bean name> -s ssl_enabled\n";
   }
 ?>

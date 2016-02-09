@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,7 +22,7 @@
  * check the storage capacity remaining on local datanode storage
  */
 
-  $options = getopt ("hH:p:w:c:d:x:s:");
+  $options = getopt ("hH:p:w:c:d:x:s");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
      !array_key_exists('p', $options) || !array_key_exists('w', $options) ||
      !array_key_exists('c', $options) || !array_key_exists('d', $options) ||
@@ -30,29 +31,26 @@
     exit(3);
   }
 
-  $host=split(',', $options['H']);
+  $host=$options['H'];
   $port=$options['p'];
   # Default 200 - Percent for warning alert
-  $warning=$options['w'];
+  $warn=$options['w'];  $warn = preg_replace('/%$/', '', $warn);
   # Default 200 - Percent for critical alert
-  $crit=$options['c'];
+  $crit=$options['c']; $crit = preg_replace('/%$/', '', $crit);
   # Default 21600 - Period time
   $period=$options['d'];
   # Default 1000000 - CheckpointNode will create a checkpoint of the namespace every 'dfs.namenode.checkpoint.txns'
   $txns=$options['x'];
-  $ssl_enabled=$options['s'];
 
-  $protocol = ($ssl_enabled == "true" ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? "https" : "http");
   date_default_timezone_set('UTC');
 
   # get_last_checkpoint_time
   $ch1 = curl_init();
-  $username = rtrim(`id -un`, "\n");
-  
   curl_setopt_array($ch1, array( CURLOPT_URL => $protocol."://".$host.":".$port."/jmx?qry=Hadoop:service=NameNode,name=FSNamesystem",
                                 CURLOPT_RETURNTRANSFER => true,
                                 CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-                                CURLOPT_USERPWD => "$username:",
+                                CURLOPT_USERPWD => ":",
                                 CURLOPT_SSL_VERIFYPEER => FALSE ));
   $json_string = curl_exec($ch1);
   $info = curl_getinfo($ch1);
@@ -67,11 +65,10 @@
   
   # get_journal_transaction_info
   $ch2 = curl_init();
-  $username = rtrim(`id -un`, "\n");
   curl_setopt_array($ch2, array( CURLOPT_URL => $protocol."://".$host.":".$port."/jmx?qry=Hadoop:service=NameNode,name=NameNodeInfo",
                                 CURLOPT_RETURNTRANSFER => true,
                                 CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-                                CURLOPT_USERPWD => "$username:",
+                                CURLOPT_USERPWD => ":",
                                 CURLOPT_SSL_VERIFYPEER => FALSE ));
   $json_string = curl_exec($ch2);
   $info = curl_getinfo($ch2);
@@ -94,7 +91,7 @@
     $m = date('i', $delta);
     echo "CRITICAL: Last checkpoint time is below acceptable. Checkpoint was done ${h}h. ${m}m. ago";
     exit(2);
-  }else if (($last_txid - $most_txid) > $txns && $delta / $period * 100 >= $warning){
+  }else if (($last_txid - $most_txid) > $txns && $delta / $period * 100 >= $warn){
     $h = date('H', $delta);
     $m = date('i', $delta);
     echo "WARNING: Last checkpoint time is below acceptable. Checkpoint was done ${h}h. ${m}m. ago";
@@ -106,7 +103,6 @@
 
   /* print usage */
   function usage () {
-    echo "Usage: $0 -h help -H <host> -p <port> -w <warn> -c <crit> -d <period> -x <txns> -s ssl_enabled\n";
+    echo "Usage: ./check_checkpoint_time.php -h help -H <host> -p <port> -w <warn> -c <crit> -d <period> -x <txns> -s ssl_enabled\n";
   }
-  
 ?>
