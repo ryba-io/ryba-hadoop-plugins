@@ -21,11 +21,11 @@
 #
 
 usage() {
-  echo "Usage: check_http.sh -h help -H <hostname> [-p <port> -u <url_path> -r <response_regex> -s security_enabled -S SSl_enabled]";
+  echo "Usage: check_http.sh -h help -H <hostname> [-p <port> -u <url_path> -r <response_regex> -s ssl_enabled]";
   exit 3;
 }
 
-cmd='curl -fk'
+cmd='curl --negotiate -fku:'
 host=''
 port=''
 path='/'
@@ -51,9 +51,6 @@ while getopts ":hH:p:u:r:sS" opt; do
       wantedResponse=$OPTARG
       ;;
     s)
-      sec=true
-      ;;
-    S)
       protocol='https'
       ;;
   esac
@@ -62,10 +59,6 @@ done
 
 if [[ -z "$host" ]]; then
   usage
-fi
-
-if [ "$sec" = true ]; then
-  cmd+=' --negotiate -u:'
 fi
 
 response=`$cmd $protocol://$host$port$path 2>/dev/null`
