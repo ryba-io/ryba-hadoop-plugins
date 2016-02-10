@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,7 +23,7 @@
  * check_jmx -H hostaddress -p port -k keytab path -r principal name -t kinit path -s security enabled
  */
 
-  $options = getopt("hH:p:s:");
+  $options = getopt("hH:p:s");
   //Check only for mandatory options
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) || !array_key_exists('p', $options)) {
     usage();
@@ -31,9 +32,8 @@
 
   $host=$options['H'];
   $port=$options['p'];
-  $ssl_enabled=$options['s'];
 
-  $protocol = ($ssl_enabled == "true" ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? "https" : "http");
 
   /* Get the json document */
   $ch = curl_init();
@@ -71,6 +71,6 @@
 
   /* print usage */
   function usage () {
-    echo "Usage: $0 -h help -H <host> -p <port> -s ssl_enabled";
+    echo "Usage: ./check_name_dir_status.php -h help -H <host> -p <port> -s ssl_enabled";
   }
 ?>
