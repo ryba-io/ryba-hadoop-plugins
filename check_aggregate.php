@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-  $options = getopt ("hH:p:d:s:w:c:");
+  $options = getopt ("hH:p:d:f:s:w:c:");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
      !array_key_exists('p', $options) || !array_key_exists('d', $options) ||
      !array_key_exists('w', $options) || !array_key_exists('c', $options)) {
@@ -31,34 +31,44 @@
   $service=$options['d'];
   $warn=$options['w']; $warn = preg_replace('/%$/', '', $warn);
   $crit=$options['c']; $crit = preg_replace('/%$/', '', $crit);
+  $status_codes=parseArrOpt($options, 's', array(0));
+  $filters=parseArrOpt($options, 'f');
 
-  $status_codes = (array_key_exists('s', $options) ? explode(',', $options['s']) : array(0));
+  $counts=query_livestatus($host, $port, $service, $filters, $status_codes);
 
-  $counts=query_livestatus($host, $port, $service, $status_codes);
-
-  if ($counts['total'] == 0) {
-    $percent = 0;
-  } else {
-    $percent = ($counts['affected']/$counts['total'])*100;
-  }
+  $percent = ($counts['affected']/$counts['total'])*100;
+  $exit_msg = "total: <".$counts['total'].">, affected: <".$counts['affected'].">\n";
   if ($percent >= $crit) {
-    echo "CRITICAL: total:<" . $counts['total'] . ">, affected:<" . $counts['affected'] . ">\n";
+    echo "CRITICAL: ".$exit_msg;
     exit (2);
   }
   if ($percent >= $warn) {
-    echo "WARNING: total:<" . $counts['total'] . ">, affected:<" . $counts['affected'] . ">\n";
+    echo "WARNING: ".$exit_msg;
     exit (1);
   }
-  echo "OK: total: <". $counts['total'] . ">, affected: <" . $counts['affected'] . ">\n";
+  echo "OK: ".$exit_msg;
   exit(0);
 
-  # Functions
-  /* print usage */
   function usage () {
-    echo "Usage: ./check_aggregate.php  -h help -H <host> -p <port> -d <service description> -w <warn%> -c <crit%> [-s <status_codes>]\n";
+    echo "Usage: ./check_aggregate.php  -h help -H <host> -p <port> -d <service description> -w <warn%> -c <crit%> [-f [<filters>] -s <status_codes>]\n";
   }
 
-  function query_livestatus($host, $port, $service, $status_codes){
+  function parseArrOpt($arr, $index, $default=array()){
+    return (array_key_exists($index, $arr) ? (is_array($arr[$index]) ? $arr[$index] : array($arr[$index])) : $default);
+  }
+
+  function create_request($service, $filters, $col=array('state')){
+    $msg = "GET services\n";
+    $msg.= "Filter: description = $service\n";
+    foreach($filters as $filter){
+      $msg.= "Filter: $filter\n";
+    }
+    $msg.= "Columns: ".join(' ', $col)."\n";
+    return $msg;
+  }
+
+  function query_livestatus($host, $port, $service, $filters, $status_codes){
+    $msg=create_request($service, $filters);
     if (!($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP))){
       echo "Unknown error";
       exit(2);
@@ -67,7 +77,6 @@
       echo "Connection refused";
       exit(2);
     }
-    $msg="GET services\nFilter: description = ".$service."\nColumns: state\n";
     if(!socket_write($sock, $msg, strlen($msg))){
       echo "Unable to write into socket";
       exit(2);
@@ -82,13 +91,22 @@
       exit(2);
     }
     socket_close($sock);
-    $alerts=explode("\n", trim($buf));
+    $buf=trim($buf);
+    if(empty($buf)){
+      echo "CRITICAL: total: 0";
+      exit(2);
+    }
+    $lines=explode("\n", $buf);
+    if(preg_match('/^Invalid GET/', $lines[0])){
+      echo "CRITICAL: Invalid request. Check filters.";
+      exit(2);
+    }
     $invalid=0;
-    foreach ($alerts as $state) {
+    foreach ($lines as $state) {
       if(!in_array($state, $status_codes)){
         $invalid++;
       }
     }
-    return array('total' => sizeof($alerts), 'affected' => $invalid);
+    return array('total' => sizeof($lines), 'affected' => $invalid);
   }
 ?>
