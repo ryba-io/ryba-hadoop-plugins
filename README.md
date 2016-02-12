@@ -3,6 +3,6 @@
 Shinken/Nagios plugins.
 
 Contains:
-*   Hortonworks Nagios Plugins (modified)
+*   Hortonworks Nagios Plugins (heavily modified)
 *   Personal Plugins
 

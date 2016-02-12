@@ -1,29 +1,7 @@
 #!/usr/bin/env php
 <?php
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-/* This plugin makes call to master node, get the jmx-json document
- * It checks the rpc wait time in the queue, RpcQueueTime_avg_time
- * check_rpcq_latency -h hostaddress -p port -t ServiceName -w 1 -c 1
- * Warning and Critical values are in seconds
- * Service Name = JobTracker, NameNode, JobHistoryServer
- */
+  require 'lib.php';
 
   $options = getopt ("hH:p:w:c:n:s");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
@@ -35,54 +13,37 @@
 
   $host=$options['H'];
   $port=$options['p'];
-  $master=$options['n'];
+  $service=$options['n'];
   $warn=$options['w'];
   $crit=$options['c'];
 
   $protocol = (array_key_exists('s', $options) ? "https" : "http");
 
+  $jmx_response = get_from_jmx($protocol, $host, $port, 'Hadoop:service='.$service.',name=RpcActivityForPort*');
 
-  /* Get the json document */
-  $ch = curl_init();
-  curl_setopt_array($ch, array( CURLOPT_URL => $protocol."://".$host.":".$port."/jmx?qry=Hadoop:service=".$master.",name=RpcActivityForPort*",
-                                CURLOPT_RETURNTRANSFER => true,
-                                CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-                                CURLOPT_USERPWD => ":",
-                                CURLOPT_SSL_VERIFYPEER => FALSE ));
-  $json_string = curl_exec($ch);
-  $info = curl_getinfo($ch);
-  if (intval($info['http_code']) == 401){
-    logout();
-    $json_string = curl_exec($ch);
-  }
-  $info = curl_getinfo($ch);
-  curl_close($ch);
-  $json_array = json_decode($json_string, true);
-  $object = $json_array['beans'][0];
-  if (count($object) == 0) {
-    echo "CRITICAL: Data inaccessible, Status code = ". $info['http_code'] ."\n";
+  if (empty($jmx_response)) {
+    echo "CRITICAL: Data inaccessible\n";
     exit(2);
   }
-  $RpcQueueTime_avg_time = round($object['RpcQueueTimeAvgTime'], 2);
-  $RpcProcessingTime_avg_time = round($object['RpcProcessingTimeAvgTime'], 2);
 
-  $out_msg = "RpcQueueTime_avg_time:<" . $RpcQueueTime_avg_time .
-             "> Secs, RpcProcessingTime_avg_time:<" . $RpcProcessingTime_avg_time .
-             "> Secs";
+  $queueTime = round($jmx_response[0]['RpcQueueTimeAvgTime'], 2);
+  $processingTime = round($jmx_response[0]['RpcProcessingTimeAvgTime'], 2);
 
-  if ($RpcQueueTime_avg_time >= $crit) {
-    echo "CRITICAL: " . $out_msg . "\n";
+  $out_msg = "RPC: Queue: ".$queueTime." s, Processing: ".$processingTime." s";
+
+  if ($queueTime >= $crit) {
+    echo "CRITICAL: ".$out_msg."\n";
     exit (2);
   }
-  if ($RpcQueueTime_avg_time >= $warn) {
-    echo "WARNING: " . $out_msg . "\n";
+  if ($queueTime >= $warn) {
+    echo "WARNING: ".$out_msg."\n";
     exit (1);
   }
-  echo "OK: " . $out_msg . "\n";
+  echo "OK: ".$out_msg."\n";
   exit(0);
 
   /* print usage */
   function usage () {
-    echo "Usage: ./check_rpcq_latency.php -h help -H <host> -p <port> -n <JobTracker/NameNode/JobHistoryServer> -w <warn_in_sec> -c <crit_in_sec> -s ssl_enabled\n";
+    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -n <JobTracker/NameNode/JobHistoryServer> -w <warn_in_sec> -c <crit_in_sec> -s ssl_enabled\n";
   }
 ?>

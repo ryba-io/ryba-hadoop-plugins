@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-  $options = getopt ("hH:p:w:c:s:");
+  $options = getopt ("hH:p:w:c:s");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) || 
      !array_key_exists('p', $options) || !array_key_exists('w', $options) ||
      !array_key_exists('c', $options)) {
@@ -29,9 +29,8 @@
   $port=$options['p'];
   $warn=$options['w']; $warn = preg_replace('/%$/', '', $warn);
   $crit=$options['c']; $crit = preg_replace('/%$/', '', $crit);
-  $ssl_enabled=$options['s'];
 
-  $protocol = ($ssl_enabled == "true" ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? "https" : "http");
 
   $jmx_response_available = false;
   $jmx_response;
@@ -96,6 +95,6 @@
 
   /* print usage */
   function usage () {
-    echo "Usage: $0 -h help -H <host> -p <port> -w <warn%> -c <crit%> -s ssl_enabled\n";
+    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -w <warn%> -c <crit%> -s ssl_enabled\n";
   }
 ?>

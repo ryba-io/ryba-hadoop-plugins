@@ -65,16 +65,16 @@ response=`$cmd $protocol://$host$port$path 2>/dev/null`
 ret=$?
 
 if [[ $ret -ne 0 ]]; then
-  echo "CRITICAL: Service not accessible: $response";
+  echo "CRITICAL: Service not accessible"
   exit 2;
 fi
 
 if [[ -n "$wantedResponse" ]]; then
   if [[ $response =~ $wantedResponse ]]; then
-    echo "OK: Service replies: $response"
+    echo "OK: Service replies correctly"
     exit 0;
   else
-    echo "CRITICAL: Service replies: $response"
+    echo "CRITICAL: Service replies incorrectly"
     exit 2;
   fi
 fi

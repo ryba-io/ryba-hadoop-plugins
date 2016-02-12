@@ -3,7 +3,7 @@
 
   require 'lib.php';
 
-  $options = getopt ("hH:p:w:c:s:");
+  $options = getopt ("hH:p:w:c:s");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
      !array_key_exists('p', $options) || !array_key_exists('w', $options) ||
      !array_key_exists('c', $options)) {
@@ -15,32 +15,30 @@
   $port=$options['p'];
   $warn=$options['w']; $warn = preg_replace('/%$/', '', $warn);
   $crit=$options['c']; $crit = preg_replace('/%$/', '', $crit);
-
   $protocol = (array_key_exists('s', $options) ? "https" : "http");
 
-    /* Get the json document */
-  $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=FSNamesystemState');
+  /* Get the json document */
+  $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=DataNode,name=FSDatasetState-*');
   if (empty($object)) {
     echo "CRITICAL: Data inaccessible\n";
     exit(2);
   }
-  $CapacityUsed = $object[0]['CapacityUsed'];
-  $CapacityRemaining = $object[0]['CapacityRemaining'];
-  $CapacityTotal = $CapacityUsed + $CapacityRemaining;
-  if($CapacityTotal == 0) {
-    $percent = 0;
-  } else {
-    $percent = ($CapacityUsed/$CapacityTotal)*100;
-  }
 
-  $out_msg = "DFS Used: ".round($CapacityUsed/(1024*1024*1024),1)
-            ." GB, Total: ".round($CapacityTotal/(1024*1024*1024),1)." GB";
+  $cap_remain = $object['Remaining']; /* Total capacity - any extenal files created in data directories by non-hadoop app */
+  $cap_total = $object['Capacity']; /* Capacity used by all data partitions minus space reserved for M/R */
+  $cap_used = $cap_total - $cap_remain;
+  $percent_used = round($cap_used/$cap_total * 100, 2);
 
-  if ($percent >= $crit) {
+  $cap_used = round($cap_used/(1024*1024*1024),2);
+  $cap_total = round($cap_total/(1024*1024*1024),2);
+
+  $out_msg = "Capacity: ".$cap_total." GB, Used: ".$cap_used." GB (".$percent_used."%)";
+
+  if ($percent_full > $crit) {
     echo "CRITICAL: ".$out_msg."\n";
     exit (2);
   }
-  if ($percent >= $warn) {
+  if ($percent_full > $warn) {
     echo "WARNING: ".$out_msg."\n";
     exit (1);
   }
