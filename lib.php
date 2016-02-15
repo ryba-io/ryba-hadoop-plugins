@@ -37,7 +37,7 @@
   }
 
   function query_livestatus($host, $port, $query){
-    $buf=query_socket($host, $port, $query);
+    $buf=trim(query_socket($host, $port, $query));
     if(empty($buf)){
       return array();
     }
