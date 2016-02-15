@@ -35,7 +35,7 @@
   }
   if($val >= $warn){
     echo "WARNING: ".$field." = ".$val.PHP_EOL;
-    exit(2);
+    exit(1);
   }
   echo "OK: ".$field." = ".$val.PHP_EOL;
   exit(0);
