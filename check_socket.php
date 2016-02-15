@@ -14,18 +14,18 @@
   $port=$options['p'];
   $msg=$options['m'];
   $wantedResp=$options['r'];
-  
+
   $resp=query_socket($host, $port, $msg);
   if(($wantedResp{0} == '/' && preg_match($wantedResp, $resp)) || ($wantedResp == $resp)){
-    echo "OK: Service replies correctly\n";
+    echo 'OK: Service replies correctly'.PHP_EOL;
     exit(0);
   }
   else{
-    echo "CRITICAL: Service replies incorrectly\n";
+    echo 'CRITICAL: Service replies incorrectly'.PHP_EOL;
     exit(2);
   }
-  
+
   function usage(){
-    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -m <msg> -r <response>\n";
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -m <msg> -r <response>'.PHP_EOL;
   }
 ?>

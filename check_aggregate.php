@@ -32,18 +32,18 @@
   $percent = ($invalid/$total)*100;
   $exit_msg = "total: <".$total.">, affected: <".$invalid.">";
   if ($percent >= $crit) {
-    echo "CRITICAL: ".$exit_msg."\n";
+    echo 'CRITICAL: '.$exit_msg.PHP_EOL;
     exit (2);
   }
   if ($percent >= $warn) {
-    echo "WARNING: ".$exit_msg."\n";
+    echo 'WARNING: '.$exit_msg.PHP_EOL;
     exit (1);
   }
-  echo "OK: ".$exit_msg."\n";
+  echo 'OK: '.$exit_msg.PHP_EOL;
   exit(0);
 
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -d <service description> -w <warn%> -c <crit%> [-f [<filters>] -s <status_codes>]\n";
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -d <service description> -w <warn%> -c <crit%> [-f [<filters>] -s <status_codes>]'.PHP_EOL;
   }
 
   function parseArrOpt($arr, $index, $default=array()){

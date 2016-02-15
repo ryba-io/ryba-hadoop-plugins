@@ -15,12 +15,12 @@
   $port=$options['p'];
   $warn=$options['w']; $warn = preg_replace('/%$/', '', $warn);
   $crit=$options['c']; $crit = preg_replace('/%$/', '', $crit);
-  $protocol = (array_key_exists('s', $options) ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
 
   /* Get the json document */
   $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=DataNode,name=FSDatasetState-*');
   if (empty($object)) {
-    echo "CRITICAL: Data inaccessible\n";
+    echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
   }
 
@@ -32,21 +32,21 @@
   $cap_used = round($cap_used/(1024*1024*1024),2);
   $cap_total = round($cap_total/(1024*1024*1024),2);
 
-  $out_msg = "Capacity: ".$cap_total." GB, Used: ".$cap_used." GB (".$percent_used."%)";
+  $out_msg = 'Capacity: '.$cap_total.' GB, Used: '.$cap_used.' GB ('.$percent_used.'%)';
 
   if ($percent_full > $crit) {
-    echo "CRITICAL: ".$out_msg."\n";
+    echo 'CRITICAL: '.$out_msg.PHP_EOL;
     exit (2);
   }
   if ($percent_full > $warn) {
-    echo "WARNING: ".$out_msg."\n";
+    echo 'WARNING: '.$out_msg.PHP_EOL;
     exit (1);
   }
-  echo "OK: ".$out_msg."\n";
+  echo 'OK: '.$out_msg.PHP_EOL;
   exit(0);
 
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -w <warn%> -c <crit%> -s ssl_enabled\n";
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -w <warn%> -c <crit%> -s ssl_enabled'.PHP_EOL;
   }
 ?>

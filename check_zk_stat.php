@@ -26,21 +26,21 @@
     }
   }
   if($val === false){
-    echo "UNKNOWN: Field ".$field." doesnt exist";
+    echo "UNKNOWN: Field ".$field." doesnt exist".PHP_EOL;
     exit(3);
   }
   if($val >= $crit){
-    echo "CRITICAL: ".$field." = ".$val."\n";
+    echo "CRITICAL: ".$field." = ".$val.PHP_EOL;
     exit(2);
   }
   if($val >= $warn){
-    echo "WARNING: ".$field." = ".$val."\n";
+    echo "WARNING: ".$field." = ".$val.PHP_EOL;
     exit(2);
   }
-  echo "OK: ".$field." = ".$val."\n";
+  echo "OK: ".$field." = ".$val.PHP_EOL;
   exit(0);
 
   function usage() {
-    echo "Usage: ./".basename(__FILE__)." -h help -H <hostname> -p <port> -f <field> -w <warning> -c <critical>\n";
+    echo "Usage: ./".basename(__FILE__)." -h help -H <hostname> -p <port> -f <field> -w <warning> -c <critical>".PHP_EOL;
   }
 ?>

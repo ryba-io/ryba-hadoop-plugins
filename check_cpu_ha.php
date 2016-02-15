@@ -64,7 +64,7 @@
   }
 
   if ($jmx_response_available === false) {
-    echo "CRITICAL: Data inaccessible, Status code = ". $info['http_code'] ."\n";
+    echo "CRITICAL: Data inaccessible, Status code = ". $info['http_code'] .PHP_EOL;
     exit(2);
   }
 

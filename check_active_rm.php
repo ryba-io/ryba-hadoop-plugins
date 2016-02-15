@@ -13,7 +13,7 @@
   $port=$options['p'];
   $cluster=$options['C'];
 
-  $protocol = (array_key_exists('s', $options) ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
 
   $query = "GET hosts\n";
   $query.= "Filter: host_name != $cluster\n";
@@ -26,7 +26,7 @@
   foreach ($namenodes as $host) {
     $json_string = do_curl($protocol, $host, $port, '/jmx?qry=Hadoop:service=ResourceManager,name=ClusterMetrics');
     if($json_string === false){
-      echo "CRITICAL: Data inaccessible\n";
+      echo 'CRITICAL: Data inaccessible'.PHP_EOL;
       exit(2);
     }
     if(preg_match('/^This is standby RM/', $json_string)){
@@ -43,15 +43,15 @@
     exit(0);
   }
   if (sizeof($active) > 1) {
-    echo "CRITICAL: More than 1 active RM detected";
+    echo 'CRITICAL: More than 1 active RM detected'.PHP_EOL;
     exit(2);
   }
   else{
-    echo "CRITICAL: No active RM detected";
+    echo 'CRITICAL: No active RM detected'.PHP_EOL;
     exit(2);
   }
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -h help -H <hosts> -p <port> -s ssl_enabled\n";
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <hosts> -p <port> -s ssl_enabled'.PHP_EOL;
   }
 ?>

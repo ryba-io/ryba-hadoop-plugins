@@ -13,7 +13,7 @@
   $host=$options['H'];
   $port=$options['p'];
 
-  $protocol = (array_key_exists('s', $options) ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
 
   $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=NameNodeInfo');
 
@@ -28,7 +28,7 @@
     foreach ($NameDirStatuses['failed'] as $key => $value) {
       $out_msg .= $key.":".$value.", ";
     }
-    echo "CRITICAL: ".$out_msg."\n";
+    echo "CRITICAL: ".$out_msg.PHP_EOL;
     exit (2);
   }
   echo "OK: All NameNode directories are active\n";

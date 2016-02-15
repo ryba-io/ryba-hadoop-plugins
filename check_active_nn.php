@@ -13,13 +13,14 @@
   $port=$options['p'];
   $cluster=$options['C'];
 
-  $protocol = (array_key_exists('s', $options) ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
 
   $query = "GET hosts\n";
   $query.= "Filter: host_name != $cluster\n";
   $query.= "Filter: host_groups >= $cluster\n";
   $query.= "Filter: host_groups >= hdfs_nn\n";
   $query.= "Columns: host_name\n";
+
   $namenodes=query_livestatus($host, $port, $query);
 
   $active=array();
@@ -27,7 +28,7 @@
     /* Get the json document */
     $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=FSNamesystem');
     if(empty($object)) {
-      echo "CRITICAL: Data inaccessible\n";
+      echo 'CRITICAL: Data inaccessible'.PHP_EOL;
       exit(2);
     }
     if($object['tag.HAState'] == 'active'){
@@ -35,15 +36,15 @@
     }
   }
   if (sizeof($active) == 1) {
-    echo "$active[0]\n";
+    echo $active[0].PHP_EOL;
     exit(0);
   }
   if (sizeof($active) > 1) {
-    echo "CRITICAL: More than 1 active NN detected";
+    echo 'CRITICAL: More than 1 active NN detected'.PHP_EOL;
     exit(2);
   }
   else{
-    echo "CRITICAL: No active NN detected";
+    echo 'CRITICAL: No active NN detected'.PHP_EOL;
     exit(2);
   }
 

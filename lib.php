@@ -2,28 +2,38 @@
 
   function query_socket($host, $port, $query){
     if (!($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP))){
-      echo "Unknown error";
+      echo 'ERROR: Unknown error'.PHP_EOL;
       exit(2);
     }
     if(!socket_connect($sock, $host, $port)){
-      echo "Connection refused";
+      echo 'ERROR: Connection refused'.PHP_EOL;
       exit(2);
     }
     if(!socket_write($sock, $query, strlen($query))){
-      echo "Unable to write into socket";
+      echo 'ERROR: Unable to write into socket'.PHP_EOL;
       exit(2);
     }
     $buf = '';
     if(!socket_shutdown($sock, 1)){ // 0 for read, 1 for write, 2 for r/w
-      echo "Cannot close socket";
+      echo 'ERROR: Cannot close socket'.PHP_EOL;
       exit(2);
     }
-    if (!($bytes = socket_recv($sock, $buf, 2048, MSG_WAITALL))){
-      echo "Service not responding";
+    $read ='';
+    while(($flag=socket_recv($sock, $buf, $bufsize,0))>0){
+      $asc=ord(substr($buf, -1));
+      if($asc==0) {
+        $read.=substr($buf,0,-1);
+        break;
+      } else {
+        $read.=$buf;
+      }
+    }
+    if ($flag<0){
+      echo 'ERROR: Socket read error'.PHP_EOL;
       exit(2);
     }
     socket_close($sock);
-    return trim($buf);
+    return $read;
   }
 
   function query_livestatus($host, $port, $query){
@@ -33,7 +43,7 @@
     }
     $lines=explode("\n", $buf);
     if(preg_match('/^Invalid GET/', $lines[0])){
-      echo "CRITICAL: Invalid request. Check filters.";
+      echo 'CRITICAL: Invalid request. Check filters'.PHP_EOL;
       exit(2);
     }
     return $lines;

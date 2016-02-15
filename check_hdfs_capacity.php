@@ -16,7 +16,7 @@
   $warn=$options['w']; $warn = preg_replace('/%$/', '', $warn);
   $crit=$options['c']; $crit = preg_replace('/%$/', '', $crit);
 
-  $protocol = (array_key_exists('s', $options) ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
 
     /* Get the json document */
   $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=FSNamesystemState');
@@ -37,14 +37,14 @@
             ." GB, Total: ".round($CapacityTotal/(1024*1024*1024),1)." GB";
 
   if ($percent >= $crit) {
-    echo "CRITICAL: ".$out_msg."\n";
+    echo "CRITICAL: ".$out_msg.PHP_EOL;
     exit (2);
   }
   if ($percent >= $warn) {
-    echo "WARNING: ".$out_msg."\n";
+    echo "WARNING: ".$out_msg.PHP_EOL;
     exit (1);
   }
-  echo "OK: ".$out_msg."\n";
+  echo "OK: ".$out_msg.PHP_EOL;
   exit(0);
 
   /* print usage */

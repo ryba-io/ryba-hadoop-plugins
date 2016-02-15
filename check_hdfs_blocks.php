@@ -31,10 +31,10 @@
   $out_msg = "missing_blocks: <".$missing_blocks .">, total_blocks: <".$total_blocks.">";
 
   if($m_percent > 0) {
-    echo "CRITICAL: ".$out_msg."\n";
+    echo "CRITICAL: ".$out_msg.PHP_EOL;
     exit(2);
   }
-  echo "OK: ".$out_msg."\n";
+  echo "OK: ".$out_msg.PHP_EOL;
   exit(0);
 
   /* print usage */

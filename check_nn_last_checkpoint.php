@@ -23,12 +23,12 @@
   # Default 1000000 - CheckpointNode will create a checkpoint of the namespace every 'dfs.namenode.checkpoint.txns'
   $txns=$options['x'];
 
-  $protocol = (array_key_exists('s', $options) ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
   date_default_timezone_set('UTC');
 
   $response = get_from_jmx($protocol, $host, $port, "Hadoop:service=NameNode,name=FSNamesystem");
   if ($response === false){
-    echo "CRITICAL: Data inaccessible\n";
+    echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
   }
   $last_checkpoint_time = (int) $response['LastCheckpointTime'];
@@ -51,13 +51,13 @@
   }
   $out_msg.=date('i', $delta)."m ago";
   if (($last_txid - $most_txid) > $txns && $delta / $period * 100 >= $crit){
-    echo "CRITICAL: ".$out_msg."\n";
+    echo "CRITICAL: ".$out_msg.PHP_EOL;
     exit(2);
   } else if(($last_txid - $most_txid) > $txns && $delta / $period * 100 >= $warn){
-    echo "WARNING: ".$out_msg."\n";
+    echo "WARNING: ".$out_msg.PHP_EOL;
     exit(1);
   } else {
-    print "OK: ".$out_msg."\n";
+    print "OK: ".$out_msg.PHP_EOL;
     exit(0);
   }
 

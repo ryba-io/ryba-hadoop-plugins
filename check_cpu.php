@@ -56,7 +56,7 @@
     $object = $json_array['beans'][0];
 
     if (count($object) == 0) {
-      echo "CRITICAL: Data inaccessible, Status code = ". $info['http_code'] ."\n";
+      echo "CRITICAL: Data inaccessible, Status code = ". $info['http_code'] .PHP_EOL;
       exit(2);
     }
 

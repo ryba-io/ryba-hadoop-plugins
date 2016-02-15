@@ -17,33 +17,33 @@
   $warn=$options['w'];
   $crit=$options['c'];
 
-  $protocol = (array_key_exists('s', $options) ? "https" : "http");
+  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
 
   $jmx_response = get_from_jmx($protocol, $host, $port, 'Hadoop:service='.$service.',name=RpcActivityForPort*');
 
   if (empty($jmx_response)) {
-    echo "CRITICAL: Data inaccessible\n";
+    echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
   }
 
   $queueTime = round($jmx_response[0]['RpcQueueTimeAvgTime'], 2);
   $processingTime = round($jmx_response[0]['RpcProcessingTimeAvgTime'], 2);
 
-  $out_msg = "RPC: Queue: ".$queueTime." s, Processing: ".$processingTime." s";
+  $out_msg = 'RPC: Queue: '.$queueTime.' s, Processing: '.$processingTime.' s';
 
   if ($queueTime >= $crit) {
-    echo "CRITICAL: ".$out_msg."\n";
+    echo 'CRITICAL: '.$out_msg.PHP_EOL;
     exit (2);
   }
   if ($queueTime >= $warn) {
-    echo "WARNING: ".$out_msg."\n";
+    echo 'WARNING: '.$out_msg.PHP_EOL;
     exit (1);
   }
-  echo "OK: ".$out_msg."\n";
+  echo 'OK: '.$out_msg.PHP_EOL;
   exit(0);
 
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -n <JobTracker/NameNode/JobHistoryServer> -w <warn_in_sec> -c <crit_in_sec> -s ssl_enabled\n";
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -n <JobTracker/NameNode/JobHistoryServer> -w <warn_in_sec> -c <crit_in_sec> -s ssl_enabled'.PHP_EOL;
   }
 ?>
