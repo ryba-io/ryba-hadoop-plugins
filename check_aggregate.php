@@ -30,6 +30,11 @@
   $total = sizeof($lines);
   $percent = ($total != 0)? ($invalid/$total)*100 : 0;
   $exit_msg = "total: <".$total.">, affected: <".$invalid.">";
+
+  if($total == 0){
+    echo 'ERROR: No service '.$service.' found'.PHP_EOL;
+    exit(2);
+  }
   if ($percent >= $crit) {
     echo 'CRITICAL: '.$exit_msg.PHP_EOL;
     exit (2);
