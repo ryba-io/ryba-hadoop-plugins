@@ -28,8 +28,7 @@
     }
   }
   $total = sizeof($lines);
-
-  $percent = ($invalid/$total)*100;
+  $percent = ($total != 0)? ($invalid/$total)*100 : 0;
   $exit_msg = "total: <".$total.">, affected: <".$invalid.">";
   if ($percent >= $crit) {
     echo 'CRITICAL: '.$exit_msg.PHP_EOL;
