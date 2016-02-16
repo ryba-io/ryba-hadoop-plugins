@@ -26,16 +26,16 @@
   $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
   date_default_timezone_set('UTC');
 
-  $response = get_from_jmx($protocol, $host, $port, "Hadoop:service=NameNode,name=FSNamesystem");
+  $response = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=FSNamesystem');
   if ($response === false){
     echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
   }
   $last_checkpoint_time = (int) $response['LastCheckpointTime'];
 
-  $response = get_from_jmx($protocol, $host, $port, "/jmx?qry=Hadoop:service=NameNode,name=NameNodeInfo");
+  $response = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=NameNodeInfo');
   if ($response === false){
-    echo "CRITICAL: Data inaccessible\n";
+    echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
   }
 
@@ -45,24 +45,24 @@
 
   $delta = (time() * 1000 - $last_checkpoint_time)/1000;
 
-  $out_msg="Last checkpoint was done ";
-  if($h > 0){
-    $out_msg.=date('H', $delta)."h";
+  $out_msg='Last checkpoint was done ';
+  if(date('H', $delta) > 0){
+    $out_msg.=date('H', $delta).'h';
   }
   $out_msg.=date('i', $delta)."m ago";
   if (($last_txid - $most_txid) > $txns && $delta / $period * 100 >= $crit){
-    echo "CRITICAL: ".$out_msg.PHP_EOL;
+    echo 'CRITICAL: '.$out_msg.PHP_EOL;
     exit(2);
   } else if(($last_txid - $most_txid) > $txns && $delta / $period * 100 >= $warn){
-    echo "WARNING: ".$out_msg.PHP_EOL;
+    echo 'WARNING: '.$out_msg.PHP_EOL;
     exit(1);
   } else {
-    print "OK: ".$out_msg.PHP_EOL;
+    echo 'OK: '.$out_msg.PHP_EOL;
     exit(0);
   }
 
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -w <warn> -c <crit> -d <period> -x <txns> -s ssl_enabled\n";
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -w <warn> -c <crit> -d <period> -x <txns> -s ssl_enabled'.PHP_EOL;
   }
 ?>

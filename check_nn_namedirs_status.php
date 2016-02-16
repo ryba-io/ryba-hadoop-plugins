@@ -17,8 +17,8 @@
 
   $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=NameNodeInfo');
 
-  if (empty($object) || $object[0]['NameDirStatuses'] == "") {
-    echo "CRITICAL: NameNode directory status not available\n";
+  if (empty($object) || $object['NameDirStatuses'] == '') {
+    echo 'CRITICAL: NameNode directory status not available'.PHP_EOL;
     exit(2);
   }
   $NameDirStatuses = json_decode($object['NameDirStatuses'], true);
@@ -26,17 +26,15 @@
   $out_msg = "Offline NameNode directories: ";
   if ($failed_dir_count > 0) {
     foreach ($NameDirStatuses['failed'] as $key => $value) {
-      $out_msg .= $key.":".$value.", ";
+      $out_msg .= $key.':'.$value.', ';
     }
-    echo "CRITICAL: ".$out_msg.PHP_EOL;
+    echo 'CRITICAL: '.$out_msg.PHP_EOL;
     exit (2);
   }
-  echo "OK: All NameNode directories are active\n";
+  echo 'OK: All NameNode directories are active'.PHP_EOL;
   exit(0);
 
-  /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -s ssl_enabled\n";
-    exit(3);
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -s ssl_enabled'.PHP_EOL;
   }
 ?>

@@ -21,11 +21,11 @@
     /* Get the json document */
   $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=FSNamesystemState');
   if (empty($object)) {
-    echo "CRITICAL: Data inaccessible\n";
+    echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
   }
-  $CapacityUsed = $object[0]['CapacityUsed'];
-  $CapacityRemaining = $object[0]['CapacityRemaining'];
+  $CapacityUsed = $object['CapacityUsed'];
+  $CapacityRemaining = $object['CapacityRemaining'];
   $CapacityTotal = $CapacityUsed + $CapacityRemaining;
   if($CapacityTotal == 0) {
     $percent = 0;
@@ -33,22 +33,22 @@
     $percent = ($CapacityUsed/$CapacityTotal)*100;
   }
 
-  $out_msg = "DFS Used: ".round($CapacityUsed/(1024*1024*1024),1)
-            ." GB, Total: ".round($CapacityTotal/(1024*1024*1024),1)." GB";
+  $out_msg = "$percent% -- DFS Used: ".round($CapacityUsed/(1024*1024*1024),1)
+            .' GB, Total: '.round($CapacityTotal/(1024*1024*1024),1).' GB';
 
   if ($percent >= $crit) {
-    echo "CRITICAL: ".$out_msg.PHP_EOL;
+    echo 'CRITICAL: '.$out_msg.PHP_EOL;
     exit (2);
   }
   if ($percent >= $warn) {
-    echo "WARNING: ".$out_msg.PHP_EOL;
+    echo 'WARNING: '.$out_msg.PHP_EOL;
     exit (1);
   }
-  echo "OK: ".$out_msg.PHP_EOL;
+  echo 'OK: '.$out_msg.PHP_EOL;
   exit(0);
 
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -w <warn%> -c <crit%> -s ssl_enabled\n";
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -w <warn%> -c <crit%> -s ssl_enabled'.PHP_EOL;
   }
 ?>

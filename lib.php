@@ -1,6 +1,6 @@
 <?php
 
-  function query_socket($host, $port, $query){
+  function query_socket($host, $port, $query, $bufsize=2048){
     if (!($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP))){
       echo 'ERROR: Unknown error'.PHP_EOL;
       exit(2);
@@ -71,5 +71,19 @@
       return false;
     }
     return $json_array['beans'][0];
+  }
+
+  function create_service_request($service, $filters, $col=array('state')){
+    $msg = "GET services\n";
+    $msg.= "Filter: description = $service\n";
+    foreach($filters as $filter){
+      $msg.= "Filter: $filter\n";
+    }
+    $msg.= "Columns: ".join(' ', $col)."\n";
+    return $msg;
+  }
+
+  function parseArrOpt($arr, $index, $default=array()){
+    return (array_key_exists($index, $arr) ? (is_array($arr[$index]) ? $arr[$index] : array($arr[$index])) : $default);
   }
 ?>

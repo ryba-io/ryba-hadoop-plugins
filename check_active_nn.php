@@ -3,20 +3,21 @@
 
   require 'lib.php';
 
-  $options = getopt ("hH:p:C:s");
+  $options = getopt ("hH:p:C:P:s");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
-     !array_key_exists('p', $options) || !array_key_exists('C', $options) {
+     !array_key_exists('p', $options) || !array_key_exists('C', $options) ||
+     !array_key_exists('P', $options)) {
     usage();
     exit(3);
   }
   $host=$options['H'];
   $port=$options['p'];
+  $nn_port=$options['P'];
   $cluster=$options['C'];
 
   $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
 
   $query = "GET hosts\n";
-  $query.= "Filter: host_name != $cluster\n";
   $query.= "Filter: host_groups >= $cluster\n";
   $query.= "Filter: host_groups >= hdfs_nn\n";
   $query.= "Columns: host_name\n";
@@ -24,15 +25,15 @@
   $namenodes=query_livestatus($host, $port, $query);
 
   $active=array();
-  foreach ($namenodes as $host) {
+  foreach ($namenodes as $nn_host) {
     /* Get the json document */
-    $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=FSNamesystem');
+    $object = get_from_jmx($protocol, $nn_host, $nn_port, 'Hadoop:service=NameNode,name=FSNamesystem');
     if(empty($object)) {
       echo 'CRITICAL: Data inaccessible'.PHP_EOL;
       exit(2);
     }
     if($object['tag.HAState'] == 'active'){
-      $active[] = $host;
+      $active[] = $nn_host;
     }
   }
   if (sizeof($active) == 1) {
@@ -50,7 +51,7 @@
 
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -h help -H <host> -p <port> -s ssl_enabled\n";
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <livestatus_host> -p <livestatus_port> -C <cluster_name> -P <namenode_port> -s ssl_enabled'.PHP_EOL;
   }
 
   function create_request($cluster){

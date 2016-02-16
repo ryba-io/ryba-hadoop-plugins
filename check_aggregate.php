@@ -19,7 +19,7 @@
   $status_codes=parseArrOpt($options, 's', array(0));
   $filters=parseArrOpt($options, 'f');
 
-  $query=create_request($service,$filters);
+  $query=create_service_request($service,$filters);
   $lines=query_livestatus($host, $port, $query);
   $invalid=0;
   foreach ($lines as $status) {
@@ -48,19 +48,5 @@
 
   function usage () {
     echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -d <service description> -w <warn%> -c <crit%> [-f [<filters>] -s <status_codes>]'.PHP_EOL;
-  }
-
-  function parseArrOpt($arr, $index, $default=array()){
-    return (array_key_exists($index, $arr) ? (is_array($arr[$index]) ? $arr[$index] : array($arr[$index])) : $default);
-  }
-
-  function create_request($service, $filters, $col=array('state')){
-    $msg = "GET services\n";
-    $msg.= "Filter: description = $service\n";
-    foreach($filters as $filter){
-      $msg.= "Filter: $filter\n";
-    }
-    $msg.= "Columns: ".join(' ', $col)."\n";
-    return $msg;
   }
 ?>

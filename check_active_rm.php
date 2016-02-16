@@ -3,28 +3,29 @@
 
   require 'lib.php';
 
-  $options = getopt ("hH:p:C:s");
+  $options = getopt ("hH:p:C:P:s");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
-     !array_key_exists('p', $options) || !array_key_exists('C', $options) {
+     !array_key_exists('p', $options) || !array_key_exists('C', $options) ||
+     !array_key_exists('P', $options)) {
     usage();
     exit(3);
   }
   $host=$options['H'];
   $port=$options['p'];
+  $rm_port=$options['P'];
   $cluster=$options['C'];
 
   $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
 
   $query = "GET hosts\n";
-  $query.= "Filter: host_name != $cluster\n";
   $query.= "Filter: host_groups >= $cluster\n";
-  $query.= "Filter: host_groups >= hdfs_nn\n";
+  $query.= "Filter: host_groups >= yarn_rm\n";
   $query.= "Columns: host_name\n";
-  $namenodes=query_livestatus($host, $port, $query);
+  $resourcemanagers=query_livestatus($host, $port, $query);
 
   $active=array();
-  foreach ($namenodes as $host) {
-    $json_string = do_curl($protocol, $host, $port, '/jmx?qry=Hadoop:service=ResourceManager,name=ClusterMetrics');
+  foreach ($resourcemanagers as $rm_host) {
+    $json_string = do_curl($protocol, $rm_host, $rm_port, '/jmx?qry=Hadoop:service=ResourceManager,name=ClusterMetrics');
     if($json_string === false){
       echo 'CRITICAL: Data inaccessible'.PHP_EOL;
       exit(2);
@@ -35,11 +36,11 @@
     $json_array = json_decode($json_string, true);
     $object = $json_array['beans'][0];
     if (count($object) != 0) {
-      $active[] = $host;
+      $active[] = $rm_host;
     }
   }
   if (sizeof($active) == 1) {
-    echo "$active[0]\n";
+    echo $active[0].PHP_EOL;
     exit(0);
   }
   if (sizeof($active) > 1) {
@@ -52,6 +53,6 @@
   }
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <hosts> -p <port> -s ssl_enabled'.PHP_EOL;
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <livestatus_host> -p <livestatus_port> -C <cluster_name> -P <namenode_port> -s ssl_enabled'.PHP_EOL;
   }
 ?>
