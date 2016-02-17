@@ -30,7 +30,7 @@
   if($CapacityTotal == 0) {
     $percent = 0;
   } else {
-    $percent = ($CapacityUsed/$CapacityTotal)*100;
+    $percent = round(($CapacityUsed/$CapacityTotal)*100, 2);
   }
 
   $out_msg = "$percent% -- DFS Used: ".round($CapacityUsed/(1024*1024*1024),1)
