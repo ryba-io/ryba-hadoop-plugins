@@ -38,7 +38,7 @@
 
   function query_livestatus($host, $port, $query){
     $buf=trim(query_socket($host, $port, $query));
-    if(empty($buf)){
+    if($buf == ''){
       return array();
     }
     $lines=explode("\n", $buf);
