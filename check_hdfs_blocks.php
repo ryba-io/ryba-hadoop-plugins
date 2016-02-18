@@ -3,7 +3,7 @@
 
   require 'lib.php';
 
-  $options = getopt ("hH:p:j:s");
+  $options = getopt ("hH:p:j:S");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) || 
      !array_key_exists('p', $options) || !array_key_exists('j', $options)) {
     usage();
@@ -13,7 +13,7 @@
   $port=$options['p'];
   $nn_jmx_property=$options['j'];
 
-  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
+  $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
 
   $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name='.$nn_jmx_property)
 
@@ -39,6 +39,6 @@
 
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -j <namenode bean name> -s ssl_enabled'.PHP_EOL;
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -j <namenode bean name> [-S ssl_enabled]'.PHP_EOL;
   }
 ?>

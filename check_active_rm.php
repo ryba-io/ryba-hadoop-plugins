@@ -3,7 +3,7 @@
 
   require 'lib.php';
 
-  $options = getopt ("hH:p:C:P:s");
+  $options = getopt ("hH:p:C:P:S");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
      !array_key_exists('p', $options) || !array_key_exists('C', $options) ||
      !array_key_exists('P', $options)) {
@@ -15,7 +15,7 @@
   $rm_port=$options['P'];
   $cluster=$options['C'];
 
-  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
+  $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
 
   $query = "GET hosts\n";
   $query.= "Filter: host_groups >= $cluster\n";
@@ -53,6 +53,6 @@
   }
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <livestatus_host> -p <livestatus_port> -C <cluster_name> -P <namenode_port> -s ssl_enabled'.PHP_EOL;
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <livestatus_host> -p <livestatus_port> -C <cluster_name> -P <namenode_port> [-S ssl_enabled]'.PHP_EOL;
   }
 ?>

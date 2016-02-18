@@ -3,7 +3,7 @@
 
   require 'lib.php';
 
-  $options = getopt ("hH:p:w:c:d:x:s");
+  $options = getopt ("hH:p:w:c:d:x:S");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
      !array_key_exists('p', $options) || !array_key_exists('w', $options) ||
      !array_key_exists('c', $options) || !array_key_exists('d', $options) ||
@@ -23,7 +23,7 @@
   # Default 1000000 - CheckpointNode will create a checkpoint of the namespace every 'dfs.namenode.checkpoint.txns'
   $txns=$options['x'];
 
-  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
+  $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
   date_default_timezone_set('UTC');
 
   $response = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=FSNamesystem');
@@ -63,6 +63,6 @@
 
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -w <warn> -c <crit> -d <period> -x <txns> -s ssl_enabled'.PHP_EOL;
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -w <warn> -c <crit> -d <period> -x <txns> [-S ssl_enabled]'.PHP_EOL;
   }
 ?>

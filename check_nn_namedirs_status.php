@@ -3,7 +3,7 @@
 
   require 'lib.php';
 
-  $options = getopt("hH:p:s");
+  $options = getopt("hH:p:S");
   //Check only for mandatory options
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) || !array_key_exists('p', $options)) {
     usage();
@@ -13,7 +13,7 @@
   $host=$options['H'];
   $port=$options['p'];
 
-  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
+  $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
 
   $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=NameNodeInfo');
 
@@ -35,6 +35,6 @@
   exit(0);
 
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -s ssl_enabled'.PHP_EOL;
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> [-S ssl_enabled]'.PHP_EOL;
   }
 ?>

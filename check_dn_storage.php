@@ -3,7 +3,7 @@
 
   require 'lib.php';
 
-  $options = getopt ("hH:p:w:c:s");
+  $options = getopt ("hH:p:w:c:S");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
      !array_key_exists('p', $options) || !array_key_exists('w', $options) ||
      !array_key_exists('c', $options)) {
@@ -15,7 +15,7 @@
   $port=$options['p'];
   $warn=$options['w']; $warn = preg_replace('/%$/', '', $warn);
   $crit=$options['c']; $crit = preg_replace('/%$/', '', $crit);
-  $protocol = (array_key_exists('s', $options) ? 'https' : 'http');
+  $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
 
   /* Get the json document */
   $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=DataNode,name=FSDatasetState-*');
@@ -47,6 +47,6 @@
 
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -w <warn%> -c <crit%> -s ssl_enabled'.PHP_EOL;
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -w <warn%> -c <crit%> [-S ssl_enabled]'.PHP_EOL;
   }
 ?>

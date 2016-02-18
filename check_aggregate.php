@@ -16,7 +16,7 @@
   $service=$options['d'];
   $warn=$options['w']; $warn = preg_replace('/%$/', '', $warn);
   $crit=$options['c']; $crit = preg_replace('/%$/', '', $crit);
-  $status_codes=parseArrOpt($options, 's', array(0));
+  $status_codes=parseArrOpt($options, 'S', array(0));
   $filters=parseArrOpt($options, 'f');
 
   $query=create_service_request($service,$filters);

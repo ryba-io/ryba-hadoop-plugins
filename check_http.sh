@@ -21,7 +21,7 @@
 #
 
 usage() {
-  echo "Usage: check_http.sh -h help -H <hostname> [-p <port> -u <url_path> -r <response_regex> -s ssl_enabled]";
+  echo "Usage: check_http.sh -h help -H <hostname> [-p <port> -u <url_path> -r <response_regex> -S ssl_enabled]";
   exit 3;
 }
 
