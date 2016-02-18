@@ -22,13 +22,14 @@
   $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
 
     /* Get the json document */
-  $object = get_from_jmx($protocol, $host, $port, 'Hadoop:service=NameNode,name=FSNamesystemState');
+  $object = get_info($protocol, $host, $port);
+  
   if (empty($object)) {
     echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
   }
   $val= array_key_exists($field, $object)? $object[$field] : false;
-  $out_msg = $field.' = '.$val;
+  $out_msg = "Field $field = $val";
   if(empty($val)){
     echo 'UNKNOWN: Field '.$field.' not found'.PHP_EOL;
     exit(3);
@@ -58,5 +59,16 @@
   /* print usage */
   function usage () {
     echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -f <field> -w <warn%> -c <crit%> [-r <ret_value> -S ssl_enabled]'.PHP_EOL;
+  }
+  function get_info($protocol, $host, $port){
+    $json_string = do_curl($protocol, $host, $port, '/ws/v1/node/info');
+    if($json_string === false){
+      return false;
+    }
+    $json_array = json_decode($json_string, true);
+    if(empty($json_array['nodeInfo'])){
+      return false;
+    }
+    return $json_array['nodeInfo'];
   }
 ?>
