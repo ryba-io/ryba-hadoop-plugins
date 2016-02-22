@@ -26,11 +26,7 @@
   $active=array();
   foreach ($resourcemanagers as $rm_host) {
     $json_string = do_curl($protocol, $rm_host, $rm_port, '/jmx?qry=Hadoop:service=ResourceManager,name=ClusterMetrics');
-    if($json_string === false){
-      echo 'CRITICAL: Data inaccessible'.PHP_EOL;
-      exit(2);
-    }
-    if(preg_match('/^This is standby RM/', $json_string)){
+    if($json_string === false || preg_match('/^This is standby RM/', $json_string)){
       continue;
     }
     $json_array = json_decode($json_string, true);
