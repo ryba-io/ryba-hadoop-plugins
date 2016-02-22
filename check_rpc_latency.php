@@ -26,8 +26,8 @@
     exit(2);
   }
 
-  $queueTime = round($jmx_response[0]['RpcQueueTimeAvgTime'], 2);
-  $processingTime = round($jmx_response[0]['RpcProcessingTimeAvgTime'], 2);
+  $queueTime = round($jmx_response['RpcQueueTimeAvgTime'], 2);
+  $processingTime = round($jmx_response['RpcProcessingTimeAvgTime'], 2);
 
   $out_msg = 'RPC: Queue: '.$queueTime.' s, Processing: '.$processingTime.' s';
 
