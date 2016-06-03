@@ -24,17 +24,19 @@
     echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
   }
-  $CapacityUsed = $object['CapacityUsed'];
-  $CapacityRemaining = $object['CapacityRemaining'];
-  $CapacityTotal = $CapacityUsed + $CapacityRemaining;
-  if($CapacityTotal == 0) {
-    $percent = 0;
+  $cap_used = $object['CapacityUsed'];
+  $cap_remain = $object['CapacityRemaining'];
+  $cap_total = $cap_used + $cap_remain;
+  if($cap_total == 0) {
+    $percent_used = 0;
   } else {
-    $percent = round(($CapacityUsed/$CapacityTotal)*100, 2);
+    $percent_used = round(($cap_used/$cap_total)*100, 2);
   }
 
-  $out_msg = "$percent% -- DFS Used: ".round($CapacityUsed/(1024*1024*1024),1)
-            .' GB, Total: '.round($CapacityTotal/(1024*1024*1024),1).' GB';
+  $cap_total_h = round($cap_total/(1024*1024*1024),1);
+  $cap_used_h = round($cap_used/(1024*1024*1024),1);
+
+  $out_msg = 'Capacity: '.$cap_total_h.' GB, Used: '.$cap_used_h.' GB ('.$percent_used.'%)|capUsed='.$cap_used.';capTotal='.$cap_total.';percent='.$percent_used.'%';
 
   if ($percent >= $crit) {
     echo 'CRITICAL: '.$out_msg.PHP_EOL;

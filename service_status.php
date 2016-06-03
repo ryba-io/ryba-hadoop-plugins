@@ -10,12 +10,14 @@
     exit(3);
   }
 
-  $host=$options['H'];
+  $hosts=explode(',', $options['H']);
   $port=$options['p'];
   $service=$options['d'];
   $filters=parseArrOpt($options, 'f');
-
-  $res=query_livestatus($host,$port,create_service_request($service,$filters, array('plugin_output')));
+  foreach ($hosts as $host) {
+    $res=query_livestatus($host,$port,create_service_request($service,$filters, array('plugin_output')));
+    if(!empty($res)) break;
+  }
   if(sizeof($res) == 0){
     echo "Error: No OUTPUT found";
     exit(2);

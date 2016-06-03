@@ -28,7 +28,7 @@
     }
   }
 
-  $out_msg = $field.' = '.$val;
+  $out_msg = $field.' = '.$val.'|'.$field.'='.$val;
   if (array_key_exists('r', $options)){
     $wantedResp=$options['r'];
     if($val != $wantedResp){

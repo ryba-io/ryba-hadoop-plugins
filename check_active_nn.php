@@ -10,24 +10,28 @@
     usage();
     exit(3);
   }
-  $host=$options['H'];
+  $hosts=explode(',', $options['H']);
   $port=$options['p'];
   $nn_port=$options['P'];
   $cluster=$options['C'];
 
   $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
-
+  $object = false;
   $query = "GET hosts\n";
   $query.= "Filter: host_groups >= $cluster\n";
   $query.= "Filter: host_groups >= hdfs_nn\n";
   $query.= "Columns: host_name\n";
-
-  $namenodes=query_livestatus($host, $port, $query);
-
+  foreach ($hosts as $host) {
+    $namenodes=query_livestatus($host, $port, $query);
+    if(!empty($namenodes)) break;
+  }
   $active=array();
   foreach ($namenodes as $nn_host) {
     /* Get the json document */
-    $object = get_from_jmx($protocol, $nn_host, $nn_port, 'Hadoop:service=NameNode,name=FSNamesystem');
+    foreach ($hosts as $host) {
+      $object = get_from_jmx($protocol, $nn_host, $nn_port, 'Hadoop:service=NameNode,name=FSNamesystem');
+      if(!empty($object)) break;
+    }
     if(empty($object)) {
       echo 'CRITICAL: Data inaccessible'.PHP_EOL;
       exit(2);

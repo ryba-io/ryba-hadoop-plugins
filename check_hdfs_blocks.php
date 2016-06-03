@@ -27,7 +27,8 @@
   } else {
     $m_percent = ($missing_blocks/$total_blocks)*100;
   }
-  $out_msg = 'Missing blocks: '.$missing_blocks .'/'.$total_blocks;
+
+  $out_msg = 'Missing blocks: '.$missing_blocks .'/'.$total_blocks.' ('.$m_percent.'%)|missingBlocks='.$missing_blocks.';totalBlocks='.$total_blocks.';percent='.$m_percent.'%';
 
   if($m_percent > 0) {
     echo 'CRITICAL: '.$out_msg.PHP_EOL;

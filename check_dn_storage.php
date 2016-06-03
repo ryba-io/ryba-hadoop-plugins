@@ -29,16 +29,16 @@
   $cap_used = $cap_total - $cap_remain;
   $percent_used = round($cap_used/$cap_total * 100, 2);
 
-  $cap_used = round($cap_used/(1024*1024*1024),2);
-  $cap_total = round($cap_total/(1024*1024*1024),2);
+  $cap_used_h = round($cap_used/(1024*1024*1024),2);
+  $cap_total_h = round($cap_total/(1024*1024*1024),2);
 
-  $out_msg = 'Capacity: '.$cap_total.' GB, Used: '.$cap_used.' GB ('.$percent_used.'%)';
+  $out_msg = 'Capacity: '.$cap_total_h.' GB, Used: '.$cap_used_h.' GB ('.$percent_used.'%)|capUsed='.$cap_used.';capTotal='.$cap_total.';percent='.$percent_used.'%';
 
-  if ($percent_full > $crit) {
+  if ($percent_used > $crit) {
     echo 'CRITICAL: '.$out_msg.PHP_EOL;
     exit (2);
   }
-  if ($percent_full > $warn) {
+  if ($percent_used > $warn) {
     echo 'WARNING: '.$out_msg.PHP_EOL;
     exit (1);
   }

@@ -10,7 +10,8 @@
     usage();
     exit(3);
   }
-  $host=$options['H'];
+
+  $hosts=explode(',', $options['H']);
   $port=$options['p'];
   $rm_port=$options['P'];
   $cluster=$options['C'];
@@ -21,7 +22,11 @@
   $query.= "Filter: host_groups >= $cluster\n";
   $query.= "Filter: host_groups >= yarn_rm\n";
   $query.= "Columns: host_name\n";
-  $resourcemanagers=query_livestatus($host, $port, $query);
+  $resourcemanagers=false;
+  foreach ($hosts as $host) {
+    $resourcemanagers = query_livestatus($host, $port, $query);
+    if(!empty($resourcemanagers)) break;
+  }
 
   $active=array();
   foreach ($resourcemanagers as $rm_host) {

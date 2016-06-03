@@ -49,7 +49,7 @@
   if(date('H', $delta) > 0){
     $out_msg.=date('H', $delta).'h';
   }
-  $out_msg.=date('i', $delta)."m ago";
+  $out_msg.=date('i', $delta).'m ago|delta='.$delta.'s';
   if (($last_txid - $most_txid) > $txns && $delta / $period * 100 >= $crit){
     echo 'CRITICAL: '.$out_msg.PHP_EOL;
     exit(2);
