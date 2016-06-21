@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #Author: Adrian PORTE
 #Script to send SHOW DATABASES to HiveServer2 
 #$1 = HOST
@@ -16,6 +16,3 @@ else
 	echo "CRITICAL - Query not executed"
 	exit 2
 fi
-
-
-
