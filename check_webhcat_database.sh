@@ -9,5 +9,5 @@ if [[ $out =~ $regex ]]; then
   echo "OK: WebHCat Server database [${out:0:30}...]";
   exit 0;
 fi
-echo "CRITICAL: Error accessing WebHCat Server [${out:0:30}...]";
+echo "CRITICAL: Error accessing WebHCat Server";
 exit 2;
