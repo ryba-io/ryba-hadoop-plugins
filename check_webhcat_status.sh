@@ -8,5 +8,5 @@ if [[ $out =~ $regex ]]; then
   echo "OK: WebHCat Server status [$out]";
   exit 0;
 fi
-echo "CRITICAL: Error accessing WebHCat Server, status [$out]";
+echo "CRITICAL: Error accessing WebHCat Server";
 exit 2;
