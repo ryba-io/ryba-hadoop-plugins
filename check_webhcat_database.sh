@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#Author: Adrian PORTE
+
 #Usage ./check_webhcat_database.sh HOST PORT
 
 regex="^.*\"tables\".*<status_code:200>$"
