@@ -14,6 +14,15 @@ if [ "$STATE" != "CRITICAL" ]; then
 elif [ "$ATTEMPT" != "2" ]; then
   echo "waiting for 2nd attempt. Nothing to do";
   exit 0;
+elif [ "$HOST" = "" ]; then
+  echo "no host provided"
+  exit 1;
+elif [ "$ACTION" = "" ]; then
+  echo "no action provided"
+  exit 1;
+elif [ "$SERVICE" = "" ]; then
+  echo "no service provided"
+  exit 1;
 fi
 
 ssh -o "StrictHostkeyChecking no" root@${HOST} service ${SERVICE} ${ACTION}
