@@ -185,6 +185,9 @@ class OozieJobs():
                 self.succeeded_count +\
                 self.running_count +\
 		self.prep_count
+	
+	percent = (100*(self.failed_count+self.killed_count+self.suspended_count))/total
+	
 	#Debug
         #self.failed_count = 3 
         #self.suspended_count = 0
@@ -202,7 +205,7 @@ class OozieJobs():
                         result = result+" KILLED: "+str(self.killed_count)
                if (self.suspended_count > 0):
                         result = result+" SUSPENDED: "+str(self.suspended_count)
-	       print("Critical: Last %d minutes: %s Total: %d" % (self.time_range_minutes, result, total))
+	       print("Critical: Last %d minutes: %s Total: %d (%d%%)" % (self.time_range_minutes, result, total,  percent))
 	       return 2
 	elif (((100*(self.failed_count+self.killed_count+self.suspended_count))/total) >= int(warning)):
                if (self.failed_count > 0):
@@ -211,7 +214,7 @@ class OozieJobs():
                         result = result+" KILLED: "+str(self.killed_count)
                if (self.suspended_count > 0):
                         result = result+" SUSPENDED: "+str(self.suspended_count)
-               print("Warning: Last %d minutes: %s Total: %d" % (self.time_range_minutes, result, total))
+               print("Warning: Last %d minutes: %s Total: %d (%d%%)" % (self.time_range_minutes, result, total, percent))
                return 1
 	else:
                print "OK: Last %d minutes: FAILED: %d KILLED: %d SUSPENDED: %d SUCCEEDED: %d RUNNING: %d PREP: %d Total: %d" % (
