@@ -205,7 +205,7 @@ class OozieJobs():
                         result = result+" KILLED: "+str(self.killed_count)
                if (self.suspended_count > 0):
                         result = result+" SUSPENDED: "+str(self.suspended_count)
-	       print("Critical: Last %d minutes: %s Total: %d (%d%%)" % (self.time_range_minutes, result, total,  percent))
+	       print("Critical: Last %d minutes: %s Total: %d (%d%%) | failed_count=%d, suspended_count=%d, killed_count=%d, succeeded_count=%d, running_count=%d, prep_count=%d" % (self.time_range_minutes, result, total,  percent, self.failed_count, self.suspended_count, self.killed_count, self.succeeded_count, self.running_count, self.prep_count))
 	       return 2
 	elif (((100*(self.failed_count+self.killed_count+self.suspended_count))/total) >= int(warning)):
                if (self.failed_count > 0):
@@ -214,10 +214,10 @@ class OozieJobs():
                         result = result+" KILLED: "+str(self.killed_count)
                if (self.suspended_count > 0):
                         result = result+" SUSPENDED: "+str(self.suspended_count)
-               print("Warning: Last %d minutes: %s Total: %d (%d%%)" % (self.time_range_minutes, result, total, percent))
+               print("Warning: Last %d minutes: %s Total: %d (%d%%) | failed_count=%d, suspended_count=%d, killed_count=%d, succeeded_count=%d, running_count=%d, prep_count=%d" % (self.time_range_minutes, result, total, percent, self.failed_count, self.suspended_count, self.killed_count, self.succeeded_count, self.running_count, self.prep_count))
                return 1
 	else:
-               print "OK: Last %d minutes: FAILED: %d KILLED: %d SUSPENDED: %d SUCCEEDED: %d RUNNING: %d PREP: %d Total: %d" % (
+               print "OK: Last %d minutes: FAILED: %d KILLED: %d SUSPENDED: %d SUCCEEDED: %d RUNNING: %d PREP: %d Total: %d (%d%%) | failed_count=%d, suspended_count=%d, killed_count=%d, succeeded_count=%d, running_count=%d, prep_count=%d" % (
                        self.time_range_minutes,
                        self.failed_count,
                        self.killed_count,
@@ -225,7 +225,15 @@ class OozieJobs():
                        self.succeeded_count,
                        self.running_count,
                        self.prep_count,
-                       total)
+                       total,
+		       percent,
+		       self.failed_count,
+		       self.suspended_count,
+		       self.killed_count,
+		       self.succeeded_count,
+		       self.running_count,
+		       self.prep_count			
+		)
                return 0
 
 
