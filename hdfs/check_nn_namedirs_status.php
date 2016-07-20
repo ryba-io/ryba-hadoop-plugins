@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-  require 'lib.php';
+  require '../lib.php';
 
   $options = getopt("hH:p:S");
   //Check only for mandatory options

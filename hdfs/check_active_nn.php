@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-  require 'lib.php';
+  require '../lib.php';
 
   $options = getopt ("hH:p:C:P:S");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
@@ -10,34 +10,34 @@
     usage();
     exit(3);
   }
-
   $hosts=explode(',', $options['H']);
   $port=$options['p'];
-  $rm_port=$options['P'];
+  $nn_port=$options['P'];
   $cluster=$options['C'];
 
   $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
-
+  $object = false;
   $query = "GET hosts\n";
   $query.= "Filter: host_groups >= $cluster\n";
-  $query.= "Filter: host_groups >= yarn_rm\n";
+  $query.= "Filter: host_groups >= hdfs_nn\n";
   $query.= "Columns: host_name\n";
-  $resourcemanagers=false;
   foreach ($hosts as $host) {
-    $resourcemanagers = query_livestatus($host, $port, $query);
-    if(!empty($resourcemanagers)) break;
+    $namenodes=query_livestatus($host, $port, $query);
+    if(!empty($namenodes)) break;
   }
-
   $active=array();
-  foreach ($resourcemanagers as $rm_host) {
-    $json_string = do_curl($protocol, $rm_host, $rm_port, '/jmx?qry=Hadoop:service=ResourceManager,name=ClusterMetrics');
-    if($json_string === false || preg_match('/^This is standby RM/', $json_string)){
-      continue;
+  foreach ($namenodes as $nn_host) {
+    /* Get the json document */
+    foreach ($hosts as $host) {
+      $object = get_from_jmx($protocol, $nn_host, $nn_port, 'Hadoop:service=NameNode,name=FSNamesystem');
+      if(!empty($object)) break;
     }
-    $json_array = json_decode($json_string, true);
-    $object = $json_array['beans'][0];
-    if (count($object) != 0) {
-      $active[] = $rm_host;
+    if(empty($object)) {
+      echo 'CRITICAL: Data inaccessible'.PHP_EOL;
+      exit(2);
+    }
+    if($object['tag.HAState'] == 'active'){
+      $active[] = $nn_host;
     }
   }
   if (sizeof($active) == 1) {
@@ -45,15 +45,20 @@
     exit(0);
   }
   if (sizeof($active) > 1) {
-    echo 'CRITICAL: More than 1 active RM detected'.PHP_EOL;
+    echo 'CRITICAL: More than 1 active NN detected'.PHP_EOL;
     exit(2);
   }
   else{
-    echo 'CRITICAL: No active RM detected'.PHP_EOL;
+    echo 'CRITICAL: No active NN detected'.PHP_EOL;
     exit(2);
   }
+
   /* print usage */
   function usage () {
     echo 'Usage: ./'.basename(__FILE__).' -h help -H <livestatus_host> -p <livestatus_port> -C <cluster_name> -P <namenode_port> [-S ssl_enabled]'.PHP_EOL;
+  }
+
+  function create_request($cluster){
+    return $msg;
   }
 ?>

@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-  require 'lib.php';
+  require '../lib.php';
 
   $options = getopt ("hH:p:w:c:S");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
