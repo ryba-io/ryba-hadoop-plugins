@@ -1,26 +1,25 @@
 #!/usr/bin/env python
 
-################################################
-#
-#   Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
-################################################
+################################################################################
+#                                                                              #
+#   Licensed under the Apache License, Version 2.0 (the "License");            #
+#   you may not use this file except in compliance with the License.           #
+#   You may obtain a copy of the License at                                    #
+#                                                                              #
+#       http://www.apache.org/licenses/LICENSE-2.0                             #
+#                                                                              #
+#   Unless required by applicable law or agreed to in writing, software        #
+#   distributed under the License is distributed on an "AS IS" BASIS,          #
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+#   See the License for the specific language governing permissions and        #
+#   limitations under the License.                                             #
+################################################################################
 
 """
 This requires:
  python-kerberos (CentOS Base)
  python-urllib2_kerberos (EPEL)
  pytz (CentOS Base)
-root@box>yum install python-kerberos python-urllib2_kerberos pytz
 """
 
 import sys
@@ -38,13 +37,15 @@ class OozieConnect():
         self.security_flag = security_flag
         self.host = host
         self.port = port
-
 #       Setter functions below here
         self.set_uris(self.host, self.port)
 #       Get current timezone - This assumes Oozie has been setup for the system timezone
 
     def set_uris(self, host, port, history_offset=1, history_length=100, status="SUCCEEDED"):
-        self.uris["base"] = "https://" + host + ":" + port + "/oozie"
+        if self.security_flag == "true":
+            self.uris["base"] = "https://" + host + ":" + port + "/oozie"
+        else:
+           self.uris["base"] = "http://" + host + ":" + port + "/oozie"
         self.set_job_uris(history_offset, history_length, status)
         self.uris["status"] = self.uris["base"] + "/v1/admin/status"
 
@@ -175,67 +176,32 @@ class OozieJobs():
                self.running_count + \
                self.prep_count
 
-
-
     def get_return_code(self):
-
-	total = self.failed_count +\
+        total = self.failed_count +\
                 self.suspended_count +\
                 self.killed_count +\
                 self.succeeded_count +\
                 self.running_count +\
-		self.prep_count
-	
-	percent = (100*(self.failed_count+self.killed_count+self.suspended_count))/total
-	
-	#Debug
-        #self.failed_count = 3 
-        #self.suspended_count = 0
-        #self.killed_count = 0
-	#total = 10
-	#critical = 50
-	#warning = 30
-	#print("Critical level: %d", critical)
-	#print("%F+S+K:  %d", ((100*(self.failed_count+self.killed_count+self.suspended_count))/total))	
+                self.prep_count
 
-	if (((100*(self.failed_count+self.killed_count+self.suspended_count))/total) >= int(critical)):
-               if (self.failed_count > 0):
-			result = "FAILED: "+str(self.failed_count)
-               if (self.killed_count > 0):
-                        result = result+" KILLED: "+str(self.killed_count)
-               if (self.suspended_count > 0):
-                        result = result+" SUSPENDED: "+str(self.suspended_count)
-	       print("Critical: Last %d minutes: %s Total: %d (%d%%) | failed_count=%d, suspended_count=%d, killed_count=%d, succeeded_count=%d, running_count=%d, prep_count=%d" % (self.time_range_minutes, result, total,  percent, self.failed_count, self.suspended_count, self.killed_count, self.succeeded_count, self.running_count, self.prep_count))
-	       return 2
-	elif (((100*(self.failed_count+self.killed_count+self.suspended_count))/total) >= int(warning)):
-               if (self.failed_count > 0):
-                        result = "FAILED: "+str(self.failed_count)
-               if (self.killed_count > 0):
-                        result = result+" KILLED: "+str(self.killed_count)
-               if (self.suspended_count > 0):
-                        result = result+" SUSPENDED: "+str(self.suspended_count)
-               print("Warning: Last %d minutes: %s Total: %d (%d%%) | failed_count=%d, suspended_count=%d, killed_count=%d, succeeded_count=%d, running_count=%d, prep_count=%d" % (self.time_range_minutes, result, total, percent, self.failed_count, self.suspended_count, self.killed_count, self.succeeded_count, self.running_count, self.prep_count))
-               return 1
-	else:
-               print "OK: Last %d minutes: FAILED: %d KILLED: %d SUSPENDED: %d SUCCEEDED: %d RUNNING: %d PREP: %d Total: %d (%d%%) | failed_count=%d, suspended_count=%d, killed_count=%d, succeeded_count=%d, running_count=%d, prep_count=%d" % (
-                       self.time_range_minutes,
-                       self.failed_count,
-                       self.killed_count,
-                       self.suspended_count,
-                       self.succeeded_count,
-                       self.running_count,
-                       self.prep_count,
-                       total,
-		       percent,
-		       self.failed_count,
-		       self.suspended_count,
-		       self.killed_count,
-		       self.succeeded_count,
-		       self.running_count,
-		       self.prep_count			
-		)
-               return 0
-
+        ret_code = 0
+        result = "OK:"
+        if (total > 0):
+            percent = (100*(self.failed_count+self.killed_count+self.suspended_count))/total
+            if (((100*(self.failed_count+self.killed_count+self.suspended_count))/total) >= int(critical)):
+                result  = "CRITICAL (%d%%):" % (percent)
+                ret_code = 2
+            elif (((100*(self.failed_count+self.killed_count+self.suspended_count))/total) >= int(warning)):
+                result = "WARNING (%d%%):" % (percent)
+                ret_code = 1
+            if (self.failed_count > 0):
+                result += " FAILED: %s" % (self.failed_count)
+            if (self.killed_count > 0):
+                result += " KILLED: %s" % (self.killed_count)
+            if (self.suspended_count > 0):
+                result += " SUSPENDED: %s" % (self.suspended_count)
+        print "%s TOTAL: %s on %d min|failed=%d;suspended=%d;killed=%d;succeeded=%d;running=%d;prep=%d" % (result, total, self.time_range_minutes, self.failed_count, self.suspended_count, self.killed_count, self.succeeded_count, self.running_count, self.prep_count)
+        return ret_code
 
     def run(self):
         self.get_jobs()
@@ -243,22 +209,20 @@ class OozieJobs():
         #self.print_results()
         return self.get_return_code()
 
-
 if __name__ == "__main__":
     try:
         host = sys.argv[1]
         port = sys.argv[2]
-        kinit_truth = sys.argv[3]
+        sec_flag = sys.argv[3]
         time_range = sys.argv[4]
         history_length = sys.argv[5]
-	critical = sys.argv[6]
-	warning = sys.argv[7]
+        warning = sys.argv[6]
+        critical = sys.argv[7]
     except:
-        print "Arguments to check script are wrong"
-        print "Expecting [1] host [2] port [3] kerberos ruth (true|false) [4] range in minutes [5] number of jobs [6] Critical% [7] Warning% "
+        print "Expecting [1] host [2] port [3] security (true|false) [4] range in minutes [5] jobs limit [6] Warning (%) [7] Critical (%) "
         sys.exit(0)
 
-    oozie_connection = OozieConnect(host, port, kinit_truth)
+    oozie_connection = OozieConnect(host, port, sec_flag)
     # if oozie_connection.test_connection():
     #     print "Good Connection"
     jobs = OozieJobs(oozie_connection, time_range, history_length)

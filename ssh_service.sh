@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# ./ $SERVICESTATE$ $SERVICEATTEMPTS$
-
 HOST=$1
 STATE=$2
 ATTEMPT=$3
