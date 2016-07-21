@@ -6,7 +6,7 @@
 #$3 = REALMNAME
 #$4 = USER
 #$5 = PASSWD
-#Example ./check_hive_databases.sh noeyy3fn.noe.edf.fr 10001 HADOOP_DEV.EDF.FR
+#Example ./check_hive_databases.sh HOST PORT REALNAME USER PASSWD
 
 #echo "HOST: $1"
 #echo "PORT: $2"
