@@ -3,9 +3,10 @@
 
   require '../lib.php';
 
-  $options = getopt ("hH:p:f:r:w:c:S");
+  $options = getopt ("hH:p:P:f:r:w:c:S");
   if (array_key_exists('h', $options) || !array_key_exists('H', $options) ||
-     !array_key_exists('p', $options) || !array_key_exists('f', $options)) {
+     !array_key_exists('p', $options) || !array_key_exists('P', $options) ||
+     !array_key_exists('f', $options)) {
     usage();
     exit(3);
   }
@@ -17,10 +18,11 @@
 
   $host=$options['H'];
   $port=$options['p'];
+  $path=$options['P'];
   $field=$options['f'];
   
-  function get_info($protocol, $host, $port){
-    $json_string = do_curl($protocol, $host, $port, '/webhdfs/v1/apps/hbase/data/oldWALs/?op=GETCONTENTSUMMARY');
+  function get_info($protocol, $host, $port, $path){
+    $json_string = do_curl($protocol, $host, $port, '/webhdfs/v1'.$path.'?op=GETCONTENTSUMMARY');
     #echo $json_string;
     if($json_string === false){
       return false;
@@ -36,7 +38,7 @@
   $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
 
     /* Get the json document */
-  $object = get_info($protocol, $host, $port);
+  $object = get_info($protocol, $host, $port, $path);
   if (empty($object)) {
     echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
@@ -71,6 +73,6 @@
 
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -f <field> -w <warn%> -c <crit%> [-r <ret_value> -S ssl_enabled]'.PHP_EOL;
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -P <path> -f <field> -w <warn> -c <crit> [-r <ret_value> -S ssl_enabled]'.PHP_EOL;
   }
 ?>
