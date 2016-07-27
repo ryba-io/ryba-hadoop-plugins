@@ -37,4 +37,4 @@ if [ -z "${shellcmd[$shell]}" ]; then
   exit 2
 fi
 # print file (without shebang) and pipe it to ssh
-tail -n +$index $script | ssh $ssh_res ${shellcmd[$shell]} $args
+tail -n +$index $script | ssh -o "StrictHostkeyChecking no" $ssh_res ${shellcmd[$shell]} $args

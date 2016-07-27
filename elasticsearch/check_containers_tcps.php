@@ -27,6 +27,7 @@
     }
     return true;
   }
+
   function get_info($protocol, $host, $port, $cert, $key, $cluster){
     $ch = curl_init();
     curl_setopt_array($ch, array( CURLOPT_URL => $protocol."://".$host.":".$port.'/containers/json',
@@ -56,6 +57,7 @@
     }
     return $ret;
   }
+
   /* Get the json document */
   $object = get_info($protocol, $host, $port, $cert, $key, $cluster);
   if (empty($object)) {
@@ -76,15 +78,16 @@
       }
     }
   }
-  if($ret_code == 0){ 
+  if($ret_code == 0){
     echo "OK: All tests successful".PHP_EOL;
   }
   else {
     echo "CRITICAL: ".join(',',$strings).PHP_EOL;
   }
   exit($ret_code);
+
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -P <path> -c <cert> -k <key> [-S ssl_enabled]'.PHP_EOL;
+    echo 'Usage: ./'.basename(__FILE__).' -h help -H <swarm_host> -p <swarm_port> -c <cert> -k <key> [-S ssl_enabled -C <es_cluster>]'.PHP_EOL;
   }
 ?>
