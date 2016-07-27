@@ -44,7 +44,7 @@
     exit(2);
   }
   $val= array_key_exists($field, $object)? $object[$field] : false;
-  if(empty($val)){
+  if($val === false){
     echo 'UNKNOWN: Field '.$field.' not found'.PHP_EOL;
     exit(3);
   }

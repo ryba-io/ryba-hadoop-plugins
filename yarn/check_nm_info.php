@@ -30,7 +30,7 @@
   }
   $val= array_key_exists($field, $object)? $object[$field] : false;
   $out_msg = "Field $field = $val";
-  if(empty($val)){
+  if($val === false){
     echo 'UNKNOWN: Field '.$field.' not found'.PHP_EOL;
     exit(3);
   }
