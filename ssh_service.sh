@@ -22,5 +22,5 @@ elif [ "$SERVICE" = "" ]; then
   echo "no service provided"
   exit 1;
 fi
-
+echo "`date +%s`: HOST=$HOST SERVICE=$SERVICE ACTION=$ACTION" >> ssh.log
 ssh -o "StrictHostkeyChecking no" root@${HOST} service ${SERVICE} ${ACTION}

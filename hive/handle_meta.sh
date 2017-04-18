@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 
 # ./ $SERVICESTATE$ $SERVICEATTEMPTS$
-
+echo "----------------------" >> handle_meta.log;
+echo "./ $1 $2 $3:" >> handle_meta.log;
 SSH_HOST=$3;
 
 SSH2_HOST=""
@@ -26,6 +27,8 @@ else
   exit 1;
 fi;
 
-sudo ./ssh_exec.sh root@${SSH_HOST} hive/metaflush.sh ${MYSQL_HOST};
-sudo ssh -o "StrictHostkeyChecking no" root@${SSH2_HOST} service hive-hcatalog-server restart;
+sudo ssh -o "StrictHostkeyChecking no" root@${SSH2_HOST} service hive-hcatalog-server stop >> handle_meta.log;
+sudo ./ssh_exec.sh root@${SSH_HOST} hive/metaflush.sh ${MYSQL_HOST} >> handle_meta.log;
+sudo ssh -o "StrictHostkeyChecking no" root@${SSH2_HOST} service hive-hcatalog-server start >> handle_meta.log;
+sudo ssh -o "StrictHostkeyChecking no" root@${SSH2_HOST} service hive-server2 start >> handle_meta.log;
 

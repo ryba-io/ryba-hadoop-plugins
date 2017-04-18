@@ -23,12 +23,13 @@
   
   function get_info($protocol, $host, $port, $path){
     $json_string = do_curl($protocol, $host, $port, '/webhdfs/v1'.$path.'?op=GETCONTENTSUMMARY');
-    #echo $json_string;
+
+    //echo $json_string;
     if($json_string === false){
       return false;
     }
     $json_array = json_decode($json_string, true);
-    #echo $json_array['ContentSummary'];
+    //echo $json_array['ContentSummary'];
     if(empty($json_array['ContentSummary'])){
       return false;
     }
@@ -37,7 +38,7 @@
 
   $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
 
-    /* Get the json document */
+  /* Get the json document */
   $object = get_info($protocol, $host, $port, $path);
   if (empty($object)) {
     echo 'CRITICAL: Data inaccessible'.PHP_EOL;

@@ -23,14 +23,21 @@
 
     /* Get the json document */
   $object = get_info($protocol, $host, $port);
-  
   if (empty($object)) {
     echo 'CRITICAL: Data inaccessible'.PHP_EOL;
     exit(2);
   }
-  $val= array_key_exists($field, $object)? $object[$field] : false;
-  $out_msg = "Field $field = $val";
-  if($val === false){
+  $val= array_key_exists($field, $object)? $object[$field] : null;
+  if ($val === false){
+    $out_msg = "Field $field = false";
+  }
+  elseif($val === true){
+    $out_msg = "Field $field = true";
+  }
+  else{
+    $out_msg = "Field $field = $val";
+  }
+  if($val === null){
     echo 'UNKNOWN: Field '.$field.' not found'.PHP_EOL;
     exit(3);
   }

@@ -50,6 +50,7 @@
   }
 
   function do_curl($protocol, $host, $port, $url){
+    //echo $protocol."://".$host.":".$port.$url;
     $ch = curl_init();
     curl_setopt_array($ch, array( CURLOPT_URL => $protocol."://".$host.":".$port.$url,
                                   CURLOPT_RETURNTRANSFER => true,
