@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-  $options = getopt ("H:p:t:S:P:u:");
+  $options = getopt ("H:p:t:P:u:S");
   if (!array_key_exists('H', $options) || !array_key_exists('S', $options) || 
      !array_key_exists('p', $options) || !array_key_exists('t', $options) ||
      !array_key_exists('P', $options) || !array_key_exists('u', $options)){
@@ -34,7 +34,7 @@
   $password = $options['P'];
   $table = $options['t'];
 
-  $protocol = ($ssl_enabled == "true" ? "https" : "http");
+  $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
 
   $ch = curl_init();
   $xmlheader[] = "Content-Type: text/xml";
@@ -53,7 +53,7 @@
   preg_match($re, $output, $matches, PREG_OFFSET_CAPTURE, 0);
   if (count($matches) != 2) {
     echo "Unable to get scanner\n";
-    exit(2);
+    exit(3);
   }
   $location = trim($matches[1][0]);
   //echo $location;
@@ -80,6 +80,6 @@
 
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -H <host> -p <port> -w <warn%> -c <crit%> -S ssl_enabled\n";
+    echo "Usage: hbase/".basename(__FILE__)." -H <host> -p <port> -u <user> -P <passwd> -t <table> -S <ssl_enabled>\n";
   }
 ?>

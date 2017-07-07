@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-  $options = getopt ("H:p:t:S:P:u:c:");
+  $options = getopt ("H:p:t:P:u:c:S");
   if (!array_key_exists('H', $options) || !array_key_exists('S', $options) || 
      !array_key_exists('p', $options) || !array_key_exists('t', $options) ||
      !array_key_exists('P', $options) || !array_key_exists('u', $options)||
@@ -37,7 +37,7 @@
   $cf = $options['c'];
 
 
-  $protocol = ($ssl_enabled == "true" ? "https" : "http");
+  $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
 
   $ch = curl_init();
   $xmlheader[] = "Content-Type: text/xml";
@@ -57,7 +57,7 @@
   $content_length = curl_getinfo($ch)['download_content_length'];
   $http_code = curl_getinfo($ch)['http_code'];
   if ($content_length == 0 && $http_code == 200) {
-    echo "Write Sucess : OK\n";
+    echo "OK: Write Sucessful\n";
     exit(0);
   }else {
     echo "Can't write to table ".$table." : CRITICAL\n";
@@ -67,6 +67,6 @@
 
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -H <host> -p <port> -u <knoxUsername> -P <knoxPassword> -t <hbaseTable> -c <columnfamily> -S ssl_enabled\n";
+    echo "Usage: hbase/".basename(__FILE__)." -H <host> -p <port> -u <knoxUsername> -P <knoxPassword> -t <hbaseTable> -c <columnfamily> -S ssl_enabled\n";
   }
 ?>
