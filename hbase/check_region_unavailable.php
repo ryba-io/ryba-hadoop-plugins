@@ -30,14 +30,18 @@
   $port=$options['p'];
   $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
   $output = do_curl($protocol,$host,$port,"/master-status");
-  $re = '/<td>(.*)<\/td>\s+<td>\<a.*<\/td>\s+<td>(?<online>[0-9]+)<\/td>\s+<td>(?<offline>[0-9]+)/';
+  $re = '/<td>(?<namespace>.*)<\/td>\s+<td>\<a\shref=(?<url>[^\<]+)>(?<tablename>[^<]+).*<\/td>\s+<td>(?<online>[0-9]+)<\/td>\s+<td>(?<offline>[0-9]+)/';
   preg_match_all($re, $output, $matches, PREG_SET_ORDER, 0);
- // var_dump($matches);
-  //exit(0);
   foreach ($matches as $key => $value) {
     if ($value['offline'] > 0) {
-      $fail=true;
-      echo "Table ".$value[1]. " seems offline\n";
+      #If offline, check if disabled
+      $table_output = do_curl($protocol,$host,$port,'/'.$value["url"]);
+      #If enabled: fail
+      if(preg_match('/<td>Enabled<\/td>\s+<td>true<\/td>/', $table_output)) {
+        $fail=true;
+        echo "Table ".$value["tablename"]. " seems offline\n";
+      }
+      #Else we don't care, because disabled
     }
   }
   if($fail == true) {
