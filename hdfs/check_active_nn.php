@@ -55,10 +55,6 @@
 
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <livestatus_host> -p <livestatus_port> -C <cluster_name> -P <namenode_port> [-S ssl_enabled]'.PHP_EOL;
-  }
-
-  function create_request($cluster){
-    return $msg;
+    echo 'Usage: hdfs/'.basename(__FILE__).' -h help -H <livestatus_host> -p <livestatus_port> -C <cluster_name> -P <namenode_port> [-S ssl_enabled]'.PHP_EOL;
   }
 ?>

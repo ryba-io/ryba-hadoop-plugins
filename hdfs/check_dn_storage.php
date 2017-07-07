@@ -47,6 +47,6 @@
 
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -w <warn%> -c <crit%> [-S ssl_enabled]'.PHP_EOL;
+    echo 'Usage: hdfs/'.basename(__FILE__).' -h help -H <host> -p <port> -w <warn%> -c <crit%> [-S ssl_enabled]'.PHP_EOL;
   }
 ?>

@@ -35,6 +35,6 @@
   exit(0);
 
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> [-S ssl_enabled]'.PHP_EOL;
+    echo 'Usage: hdfs/'.basename(__FILE__).' -h help -H <host> -p <port> [-S ssl_enabled]'.PHP_EOL;
   }
 ?>

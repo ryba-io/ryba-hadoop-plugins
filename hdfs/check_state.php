@@ -60,6 +60,6 @@
 
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <host> -p <port> -f <field> -j <jmx_property> -w <warn%> -c <crit%> [-r <ret_value> -S ssl_enabled]'.PHP_EOL;
+    echo 'Usage: hdfs/'.basename(__FILE__).' -h help -H <host> -p <port> -f <field> -j <jmx_property> -w <warn%> -c <crit%> [-r <ret_value> -S ssl_enabled]'.PHP_EOL;
   }
 ?>

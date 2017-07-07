@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-  $options = getopt ("H:p:t:S:P:u:");
+  $options = getopt ("H:p:t:P:u:S");
   if (!array_key_exists('H', $options) || !array_key_exists('S', $options) || 
      !array_key_exists('p', $options) || !array_key_exists('t', $options) ||
      !array_key_exists('P', $options) || !array_key_exists('u', $options)){
