@@ -71,10 +71,10 @@
   $content_length = curl_getinfo($ch)['download_content_length'];
   $http_code = curl_getinfo($ch)['http_code'];
   if ($content_length > 0 && $http_code == 200) {
-    echo "OK\n";
+    echo "OK: Scan successful\n";
     exit(0);
   }else {
-    echo "Can't read table ".$table." : CRITICAL\n";
+    echo "CRITICAL: Can't read table ".$table."\n";
     exit(2);
   }
 

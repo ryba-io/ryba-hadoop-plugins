@@ -60,7 +60,7 @@
     echo "OK: Write Sucessful\n";
     exit(0);
   }else {
-    echo "Can't write to table ".$table." : CRITICAL\n";
+    echo "CRITICAL: Can't write to table ".$table."\n";
     exit(2);
   }
 
