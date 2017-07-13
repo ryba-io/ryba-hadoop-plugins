@@ -17,19 +17,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-  require '../lib.php';
+  require 'lib.php';
+
   $options = getopt ("H:p:S");
   if (!array_key_exists('H', $options) || 
      !array_key_exists('p', $options)){
-    print_r($options);
     usage();
     exit(3);
   }
-  $fail=false;
   $host=$options['H'];
   $port=$options['p'];
   $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
+  $offline=array();
   $output = do_curl($protocol,$host,$port,"/master-status");
+  #echo $output;
   $re = '/<td>(?<namespace>.*)<\/td>\s+<td>\<a\shref=(?<url>[^\<]+)>(?<tablename>[^<]+).*<\/td>\s+<td>(?<online>[0-9]+)<\/td>\s+<td>(?<offline>[0-9]+)/';
   preg_match_all($re, $output, $matches, PREG_SET_ORDER, 0);
   foreach ($matches as $key => $value) {
@@ -38,20 +39,21 @@
       $table_output = do_curl($protocol,$host,$port,'/'.$value["url"]);
       #If enabled: fail
       if(preg_match('/<td>Enabled<\/td>\s+<td>true<\/td>/', $table_output)) {
-        $fail=true;
-        echo "Table ".$value["tablename"]. " seems offline\n";
+        if(!in_array($offline, $value['tablename'])){
+          array_push($offline, $value['tablename']);
+        }
       }
-      #Else we don't care, because disabled
     }
   }
-  if($fail == true) {
+  if(!empty($offline)) {
+    echo "CRITICAL: tables ".join(',', $offline)." have offline regions";
     exit(2);
   }
-  echo "OK";
+  echo "OK: No region offline";
   exit(0);
 
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." -H <host> -p <port> -S \n";
+    echo "Usage: hbase/".basename(__FILE__)." -H <host> -p <port> -S \n";
   }
 ?>
