@@ -54,10 +54,15 @@
     $ch = curl_init();
     curl_setopt_array($ch, array( CURLOPT_URL => $protocol."://".$host.":".$port.$url,
                                   CURLOPT_RETURNTRANSFER => true,
+                                  CURLOPT_FAILONERROR => true,
                                   CURLOPT_HTTPAUTH => CURLAUTH_ANY,
                                   CURLOPT_USERPWD => ":",
                                   CURLOPT_SSL_VERIFYPEER => FALSE ));
     $ret = curl_exec($ch);
+    if(curl_errno($ch)){
+      echo 'Curl error: '.curl_error($ch);
+      exit(3);
+    }
     curl_close($ch);
     return $ret;
   }
