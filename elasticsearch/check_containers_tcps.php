@@ -88,6 +88,6 @@
 
   /* print usage */
   function usage () {
-    echo 'Usage: ./'.basename(__FILE__).' -h help -H <swarm_host> -p <swarm_port> -c <cert> -k <key> [-S ssl_enabled -C <es_cluster>]'.PHP_EOL;
+    echo 'Usage: elasticsearch/'.basename(__FILE__).' -h help -H <swarm_host> -p <swarm_port> -c <cert> -k <key> [-S ssl_enabled -C <es_cluster>]'.PHP_EOL;
   }
 ?>

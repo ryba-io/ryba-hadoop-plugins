@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 import json
@@ -29,7 +30,7 @@ def get_containers_list(swarm_manager_url, containers_name, server_cert_path, cl
 
     return docker_api_result
 
-def get_es_http_url_list(containers_list):
+def get_es_http_url_list(containers_list, ssl_enabled):
     """Find Containers with PrivatePort matching _es_http_port and build URL list to check ES health
     :param containers_list: Docker Swarm API JSON formatted result
     :type containers_list: json
@@ -44,7 +45,11 @@ def get_es_http_url_list(containers_list):
     for container in containers_list:
         for port in container['Ports']:
             if port['PrivatePort'] == _es_http_port:
-                es_http_urls.append('http://' + port['IP'] + ':' + str(port['PublicPort']))
+                url = 'http'
+                if ssl_enabled:
+                    url += 's'
+                url += '://' + port['IP'] + ':' + str(port['PublicPort'])
+                es_http_urls.append(url)
 
     return es_http_urls
 
@@ -78,16 +83,19 @@ def main(arg):
     Exit code 1 if Warning (ES Cluster Yellow status)
     Exit code 2 if Critical (ES Cluster Red status or unreachable)
     """
-
-    docker_api_result = get_containers_list(args.swarm_manager_url, args.clustername,
-                                          args.server_cert_path, args.client_cert_path, args.client_cert_key_path)
+    url = "http"
+    if args.S:
+      url+='s'
+    url+= '://' + args.swarm_manager_host + ':' +args.swarm_manager_port
+    docker_api_result = get_containers_list(url, args.clustername, args.server_cert_path,
+                                        args.client_cert_path, args.client_cert_key_path)
 
     if docker_api_result.status_code != 200:
       raise Exception('Could not connect to Docker Swarm API: ' + request_es_health.content)
 
     containers_list = json.loads(docker_api_result.content)
 
-    es_http_urls = get_es_http_url_list(containers_list)
+    es_http_urls = get_es_http_url_list(containers_list,args.Z)
 
     es_health_results = get_es_cluster_health(es_http_urls, args.username, args.userpassword)
 
@@ -108,15 +116,17 @@ def main(arg):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Feed arguments for ES clusters check.')
-    parser.add_argument('-C', metavar='clustername', type=str, help='Cluster Name to check', dest='clustername', required=True)
+    parser.add_argument('-H', metavar='swarm_manager_host', type=str, help='Swarm Manager Host', dest='swarm_manager_host', required=True)
+    parser.add_argument('-p', metavar='swarm_manager_port', type=str, help='Swarm Manager Port', dest='swarm_manager_port', required=True)
     parser.add_argument('-u', metavar='username', type=str, help='Cluster Username authorized to check cluster health', dest='username')
     parser.add_argument('-P', metavar='userpassword', type=str, help='Cluster User password', dest='userpassword')
+    parser.add_argument('-C', metavar='clustername', default='', type=str, help='Cluster Name to check', dest='clustername')
     parser.add_argument('-s', metavar='server_certificate_path', type=str, help='Server Certificate path', dest='server_cert_path', required=True)
     parser.add_argument('-c', metavar='client_cert_path', type=str, help='Client Certificate path', dest='client_cert_path', required=True)
     parser.add_argument('-k', metavar='client_cert_key_path', type=str, help='Client Certificate key path', dest='client_cert_key_path', required=True)
-    parser.add_argument('-H', metavar='swarm_manager_url', type=str, help='Swarm Manager URL', dest='swarm_manager_url', required=True)
+    parser.add_argument('-S', help='Flag to enable SSL for swarm', action='store_true')
+    parser.add_argument('-Z', help='Flag to enable SSL for containers', action='store_true')
     args = parser.parse_args()
-
     if (args.username and not args.userpassword) or (args.userpassword and not args.username):
         parser.error("Username and user password must be provided together")
 
@@ -127,5 +137,6 @@ if __name__ == '__main__':
         raise UserWarning(e)
 
     except Exception as e:
-        print e
+        print "ERROR: " + str(e)
         sys.exit(2)
+    print 'OK: Status OK'

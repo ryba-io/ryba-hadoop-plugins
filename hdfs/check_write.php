@@ -19,26 +19,24 @@
  */
 
   $options = getopt ("H:p:t:P:u:S");
-  if (!array_key_exists('H', $options) || !array_key_exists('S', $options) || 
-     !array_key_exists('p', $options) || !array_key_exists('t', $options) ||
-     !array_key_exists('P', $options) || !array_key_exists('u', $options)){
-    print_r($options);
+  if (!array_key_exists('H', $options) || !array_key_exists('p', $options) || 
+     !array_key_exists('t', $options) || !array_key_exists('P', $options) ||
+     !array_key_exists('u', $options)){
     usage();
     exit(3);
   }
 
   $host=$options['H'];
   $port=$options['p'];
-  $ssl_enabled=$options['S'];
   $username = $options['u'];
   $password = $options['P'];
   $path = $options['t'];
 
-  $protocol = ($ssl_enabled == "true" ? "https" : "http");
+  $protocol = (array_key_exists('S', $options) ? 'https' : 'http');
   $octetheader[] = "Content-Type: application/octet-stream";
   $ch = curl_init();
   curl_setopt_array($ch, array( 
-    CURLOPT_URL => $protocol."://".$host.":".$port.'/gateway/clients/webhdfs/v1/'.$path.'?op=CREATE&overwrite=true',
+    CURLOPT_URL => $protocol."://".$host.":".$port.'/gateway/clients/webhdfs/v1'.$path.'?op=CREATE&overwrite=true',
                                 CURLOPT_RETURNTRANSFER => true,
                                 CURLOPT_HTTPAUTH => CURLAUTH_ANY,
                                 CURLOPT_FOLLOWLOCATION => false,
@@ -50,7 +48,7 @@
   $re = '/Location: (.+)/';
   preg_match($re, $output, $matches, PREG_OFFSET_CAPTURE, 0);
   if (count($matches) != 2) {
-    echo "Unable to get datanode URL\n";
+    echo "ERROR: Unable to get datanode URL\n";
     exit(2);
   }
   $location = trim($matches[1][0]);
@@ -69,15 +67,15 @@
   $content_length = curl_getinfo($ch)['download_content_length'];
   $http_code = curl_getinfo($ch)['http_code'];
   if ($http_code == 201) {
-    echo "OK\n";
+    echo "OK: HDFS Write Successful\n";
     exit(0);
   }else {
-    echo "Can't write to HDFS : CRITICAL\n";
+    echo "CRITICAL: Can't write to HDFS\n";
     exit(2);
   }
 
   /* print usage */
   function usage () {
-    echo "Usage: ./".basename(__FILE__)." H <host> -p <port> -u <knoxUsername> -P <knoxPassword> -t <path>\n";
+    echo "Usage: hdfs/".basename(__FILE__)." H <knoxHost> -p <knoxPort> -u <knoxUsername> -P <knoxPassword> -t <hdfsPath> -S ssl_enabled\n";
   }
 ?>

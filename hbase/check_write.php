@@ -23,7 +23,6 @@
      !array_key_exists('p', $options) || !array_key_exists('t', $options) ||
      !array_key_exists('P', $options) || !array_key_exists('u', $options)||
     !array_key_exists('c', $options)){
-    print_r($options);
     usage();
     exit(3);
   }
@@ -57,7 +56,7 @@
   $content_length = curl_getinfo($ch)['download_content_length'];
   $http_code = curl_getinfo($ch)['http_code'];
   if ($content_length == 0 && $http_code == 200) {
-    echo "OK: Write Sucessful\n";
+    echo "OK: HBase Write Successful\n";
     exit(0);
   }else {
     echo "CRITICAL: Can't write to table ".$table."\n";
@@ -67,6 +66,6 @@
 
   /* print usage */
   function usage () {
-    echo "Usage: hbase/".basename(__FILE__)." -H <host> -p <port> -u <knoxUsername> -P <knoxPassword> -t <hbaseTable> -c <columnfamily> -S ssl_enabled\n";
+    echo "Usage: hbase/".basename(__FILE__)." -H <knoxHost> -p <knoxPort> -u <knoxUsername> -P <knoxPassword> -t <hbaseTable> -c <columnfamily> -S ssl_enabled\n";
   }
 ?>
