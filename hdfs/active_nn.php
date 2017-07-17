@@ -28,10 +28,7 @@
   $active=array();
   foreach ($namenodes as $nn_host) {
     /* Get the json document */
-    foreach ($hosts as $host) {
-      $object = get_from_jmx($protocol, $nn_host, $nn_port, 'Hadoop:service=NameNode,name=FSNamesystem');
-      if(!empty($object)) break;
-    }
+    $object = get_from_jmx($protocol, $nn_host, $nn_port, 'Hadoop:service=NameNode,name=FSNamesystem');
     if(empty($object)) {
       echo 'CRITICAL: Data inaccessible'.PHP_EOL;
       exit(2);
