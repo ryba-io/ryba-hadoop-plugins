@@ -5,17 +5,19 @@ import json
 import requests
 import sys
 import argparse
+import warnings
+
+warnings.filterwarnings("ignore")
 
 _es_http_port = 9200
 _es_health_url = '/_cluster/health'
 
-def get_containers_list(swarm_manager_url, containers_name, server_cert_path, client_cert_path, client_cert_key_path):
+def get_containers_list(swarm_manager_url, containers_name, client_cert_path, client_cert_key_path):
     """Connect to Docker Swarm API to provide a containers list matching container's name filter
     :param swarm_manager_url: Swarm Manager URL + Port (https://FQDN:Port)
     :type swarm_manager_url: str
     :param containers_name: Containers name to find ('dco' will find all containers starting with 'dco*')
     :type containers_name: str
-    :param server_cert_path: Path to Server Certificate
     :type server_cert_path: str
     :param client_cert_path: Path to Client Certificate
     :type client_cert_path: str
@@ -26,7 +28,7 @@ def get_containers_list(swarm_manager_url, containers_name, server_cert_path, cl
     """
 
     docker_api_result = requests.get(url='{0}/containers/json?all=1&filters=%7B%22name%22%3A%7B%22{1}%22%3Atrue%7D%7D'.format(swarm_manager_url, containers_name),
-                     verify=server_cert_path, cert=(client_cert_path, client_cert_key_path))
+                     verify=False, cert=(client_cert_path, client_cert_key_path))
 
     return docker_api_result
 
@@ -87,8 +89,8 @@ def main(arg):
     if args.S:
       url+='s'
     url+= '://' + args.swarm_manager_host + ':' +args.swarm_manager_port
-    docker_api_result = get_containers_list(url, args.clustername, args.server_cert_path,
-                                        args.client_cert_path, args.client_cert_key_path)
+    docker_api_result = get_containers_list(url, args.clustername,
+                                args.client_cert_path, args.client_cert_key_path)
 
     if docker_api_result.status_code != 200:
       raise Exception('Could not connect to Docker Swarm API: ' + request_es_health.content)
@@ -121,7 +123,6 @@ if __name__ == '__main__':
     parser.add_argument('-u', metavar='username', type=str, help='Cluster Username authorized to check cluster health', dest='username')
     parser.add_argument('-P', metavar='userpassword', type=str, help='Cluster User password', dest='userpassword')
     parser.add_argument('-C', metavar='clustername', default='', type=str, help='Cluster Name to check', dest='clustername')
-    parser.add_argument('-s', metavar='server_certificate_path', type=str, help='Server Certificate path', dest='server_cert_path', required=True)
     parser.add_argument('-c', metavar='client_cert_path', type=str, help='Client Certificate path', dest='client_cert_path', required=True)
     parser.add_argument('-k', metavar='client_cert_key_path', type=str, help='Client Certificate key path', dest='client_cert_key_path', required=True)
     parser.add_argument('-S', help='Flag to enable SSL for swarm', action='store_true')
