@@ -29,36 +29,37 @@ def get_containers_list(swarm_manager_url, containers_name, client_cert_path, cl
 
     docker_api_result = requests.get(url='{0}/containers/json?all=1&filters=%7B%22name%22%3A%7B%22{1}%22%3Atrue%7D%7D'.format(swarm_manager_url, containers_name),
                      verify=False, cert=(client_cert_path, client_cert_key_path))
-
     return docker_api_result
 
 def get_es_http_url_list(containers_list, ssl_enabled):
     """Find Containers with PrivatePort matching _es_http_port and build URL list to check ES health
     :param containers_list: Docker Swarm API JSON formatted result
     :type containers_list: json
+    :param ssl_enabled: enable or not https
+    :type ssl_enabled: bool
     :param _es_http_port: ES port used in PrivatePort for containers [default 9200]
     :type _es_http_port: int
-    :return: List of URLs built with strings
-    :rtype: list
+    :return: Dict of URLs built with strings
+    :rtype: dict
     """
 
-    es_http_urls = []
-
+    es_http_urls = {}
     for container in containers_list:
+        container_name = container['Names'][0]
         for port in container['Ports']:
             if port['PrivatePort'] == _es_http_port:
                 url = 'http'
                 if ssl_enabled:
                     url += 's'
                 url += '://' + port['IP'] + ':' + str(port['PublicPort'])
-                es_http_urls.append(url)
+                es_http_urls[container_name]=url
 
     return es_http_urls
 
 def get_es_cluster_health(es_http_urls, username=None, userpassword=None):
     """Get ES cluster health from ES API
-    :param es_http_urls: URLs list of ES nodes to check
-    :type es_http_urls: list
+    :param es_http_urls: URLs dict of ES nodes to check
+    :type es_http_urls: dict
     :param username: Username authorized to check ES Health (Only needed if xpack security enabled)
     :type username: str
     :param userpassword: User password (needed only with username parameter)
@@ -66,12 +67,11 @@ def get_es_cluster_health(es_http_urls, username=None, userpassword=None):
     :return: An HTTP Response object containing JSON formatted result or error
     :rtype: json
     """
-    es_health_results = []
-
-    for es_http_url in es_http_urls:
-        request_es_health = requests.get(url=es_http_url + _es_health_url,
+    es_health_results = {}
+    for container in es_http_urls:
+        request_es_health = requests.get(url=es_http_urls[container] + _es_health_url,
                                        auth=(args.username, args.userpassword))
-        es_health_results.append(request_es_health)
+        es_health_results[container] = request_es_health
 
     return es_health_results
 
@@ -101,20 +101,20 @@ def main(arg):
 
     es_health_results = get_es_cluster_health(es_http_urls, args.username, args.userpassword)
 
-    for es_health_result in es_health_results:
-        if es_health_result.status_code != 200:
-            raise Exception('Could not check es_health: ' + es_health_result.content)
+    for container in es_health_results:
+        if es_health_results[container].status_code != 200:
+            raise Exception('Could not check es_health: ' + container)
 
-        es_health = json.loads(es_health_result.content)
+        es_health = json.loads(es_health_results[container].content)
 
         if es_health['status'] != 'green':
             if es_health['status'] == 'yellow':
-                raise UserWarning('WARNING: CLUSTER STATUS YELLOW: check full health status {}'.format(es_health))
+                raise UserWarning('CLUSTER STATUS YELLOW: container_name: {0}; cluster_name: {1}'.format(container, es_health['cluster_name']))
 
             elif es_health['status'] == 'red':
-                raise Exception('ERROR: CLUSTER STATUS RED: check full health status {}'.format(es_health))
+                raise Exception('CLUSTER STATUS RED: {}'.format(container, es_health['cluster_name']))
             else:
-                raise Exception('ERROR: UNKNOWN STATUS {}'.format(es_health))
+                raise Exception('UNKNOWN STATUS: {}'.format(container, es_health['cluster_name']))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Feed arguments for ES clusters check.')
@@ -135,7 +135,8 @@ if __name__ == '__main__':
         main(args)
 
     except UserWarning as e:
-        raise UserWarning(e)
+        print "WARNING: " + str(e)
+        sys.exit(1)
 
     except Exception as e:
         print "ERROR: " + str(e)
