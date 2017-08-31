@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
+from requests import ConnectionError
 import json
 import requests
 import sys
@@ -69,10 +70,10 @@ def get_es_cluster_health(es_http_urls, username=None, userpassword=None):
     """
     es_health_results = {}
     for container in es_http_urls:
+        main.container = container.split('/')[2]
         request_es_health = requests.get(url=es_http_urls[container] + _es_health_url,
                                        auth=(args.username, args.userpassword))
         es_health_results[container] = request_es_health
-
     return es_health_results
 
 def main(arg):
@@ -85,6 +86,7 @@ def main(arg):
     Exit code 1 if Warning (ES Cluster Yellow status)
     Exit code 2 if Critical (ES Cluster Red status or unreachable)
     """
+
     url = "http"
     if args.S:
       url+='s'
@@ -93,28 +95,26 @@ def main(arg):
                                 args.client_cert_path, args.client_cert_key_path)
 
     if docker_api_result.status_code != 200:
-      raise Exception('Could not connect to Docker Swarm API: ' + request_es_health.content)
+      raise ConnectionError
 
     containers_list = json.loads(docker_api_result.content)
-
     es_http_urls = get_es_http_url_list(containers_list,args.Z)
-
     es_health_results = get_es_cluster_health(es_http_urls, args.username, args.userpassword)
 
     for container in es_health_results:
+        main.container = container.split('/')[2]
         if es_health_results[container].status_code != 200:
-            raise Exception('Could not check es_health: ' + container)
+            raise ConnectionError(es_health_results[container])
 
         es_health = json.loads(es_health_results[container].content)
 
         if es_health['status'] != 'green':
             if es_health['status'] == 'yellow':
-                raise UserWarning('CLUSTER STATUS YELLOW: container_name: {0}; cluster_name: {1}'.format(container, es_health['cluster_name']))
-
+                raise UserWarning('CLUSTER STATUS YELLOW: container_name: {0}; cluster_name: {1}'.format(main.container, es_health['cluster_name']))
             elif es_health['status'] == 'red':
-                raise Exception('CLUSTER STATUS RED: {}'.format(container, es_health['cluster_name']))
+                raise Exception('CLUSTER STATUS RED: container_name: {0}; cluster_name: {1}'.format(main.container, es_health['cluster_name']))
             else:
-                raise Exception('UNKNOWN STATUS: {}'.format(container, es_health['cluster_name']))
+                raise Exception('UNKNOWN STATUS: container_name: {0}; cluster_name: {1}'.format(main.container, es_health['cluster_name']))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Feed arguments for ES clusters check.')
@@ -135,10 +135,15 @@ if __name__ == '__main__':
         main(args)
 
     except UserWarning as e:
-        print "WARNING: " + str(e)
+        print("WARNING: {}".format(e))
         sys.exit(1)
-
-    except Exception as e:
-        print "ERROR: " + str(e)
+    except ConnectionError as e:
+        if main.container:
+            print("ERROR: Could not check es_health: container_name : {}".format(main.container))
+        else:
+            print("ERROR: Could not connect to Docker Swarm API: host:{}".format(args.swarm_manager_host))
         sys.exit(2)
-    print 'OK: Status OK'
+    except Exception as e:
+        print("ERROR: {}".format(e))
+        sys.exit(2)
+    print("OK: Status OK")
