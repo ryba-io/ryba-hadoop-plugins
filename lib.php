@@ -49,7 +49,7 @@
     return $lines;
   }
 
-  function do_curl($protocol, $host, $port, $url){
+  function do_curl($protocol, $host, $port, $url, $json = false){
     //echo $protocol."://".$host.":".$port.$url;
     $ch = curl_init();
     curl_setopt_array($ch, array( CURLOPT_URL => $protocol."://".$host.":".$port.$url,
@@ -58,6 +58,14 @@
                                   CURLOPT_HTTPAUTH => CURLAUTH_ANY,
                                   CURLOPT_USERPWD => ":",
                                   CURLOPT_SSL_VERIFYPEER => FALSE ));
+
+    if ($json) {
+      curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        "Accept: application/json",
+        "Content-Type: application/json"
+        ));
+    }
+
     $ret = curl_exec($ch);
     if(curl_errno($ch)){
       echo 'Curl error: '.curl_error($ch);
