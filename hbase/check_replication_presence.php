@@ -68,15 +68,20 @@ foreach ($tables['table'] as $table) {
     }
 }
 
+$hosts2List = explode(',',$host2);
 // For each table needed to be replicated, get on the second cluster whether it is actually replicated
 // We remove from the array the CF/table that are replicated.
 foreach ($cf_not_replicated as $table => $cfs) {
-    $output = do_curl($protocol2, $host2, $port2, "/" . $table . "/schema", true);
-    $decode                  = json_decode($output, true);
-    $cf_not_replicated[$table] = array_diff($cf_not_replicated[$table], array_map("getName", $decode['ColumnSchema']));
-    
+    try {
+      $output = do_curl_failover($protocol2, $hosts2List, $port2, "/" . $table . "/schema", true);
+      $decode                  = json_decode($output, true);
+      $cf_not_replicated[$table] = array_diff($cf_not_replicated[$table], array_map("getName", $decode['ColumnSchema']));
+    } catch (NotFoundException $e) {
+      // The table could not be found
+    }
+        
     if (empty($cf_not_replicated[$table])) {
-        unset($cf_not_replicated[$table]);
+      unset($cf_not_replicated[$table]);
   }
 }
 
