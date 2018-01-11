@@ -75,6 +75,41 @@
     return $ret;
   }
 
+  class NotFoundException extends Exception { }
+  
+  # Receive a, array of hosts as a parameter
+  function do_curl_failover($protocol, $hosts, $port, $url, $json = false){
+    foreach($hosts as $host) {
+      $ch = curl_init();
+      // echo $protocol."://".$host.":".$port.$url;
+      curl_setopt_array($ch, array( CURLOPT_URL => $protocol."://".$host.":".$port.$url,
+                                    CURLOPT_RETURNTRANSFER => true,
+                                    CURLOPT_FAILONERROR => true,
+                                    CURLOPT_HTTPAUTH => CURLAUTH_ANY,
+                                    CURLOPT_USERPWD => ":",
+                                    CURLOPT_SSL_VERIFYPEER => FALSE ));
+
+      if ($json) {
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+          "Accept: application/json",
+          "Content-Type: application/json"
+          ));
+      }
+
+      $ret = curl_exec($ch);
+      if(!curl_errno($ch)){
+        curl_close($ch);
+        return $ret;
+      }
+      if(curl_errno($ch) == '22' && curl_getinfo($ch, CURLINFO_HTTP_CODE) == '404'){
+        throw new NotFoundException($protocol."://".$host.":".$port.$url);
+      }
+    }
+    $hostsList = join(',', $hosts);
+    echo "Curl error : unable to connect to $hostsList".PHP_EOL;
+    exit(3);
+  }
+
   function get_from_jmx($protocol, $host, $port, $query){
     $json_string = do_curl($protocol, $host, $port, '/jmx?qry='.$query);
     if($json_string === false){
