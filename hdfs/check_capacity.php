@@ -38,11 +38,11 @@
 
   $out_msg = 'Capacity: '.$cap_total_h.' GB, Used: '.$cap_used_h.' GB ('.$percent_used.'%)|capUsed='.$cap_used.';capTotal='.$cap_total.';percent='.$percent_used.'%';
 
-  if ($percent >= $crit) {
+  if ($percent_used >= $crit) {
     echo 'CRITICAL: '.$out_msg.PHP_EOL;
     exit (2);
   }
-  if ($percent >= $warn) {
+  if ($percent_used >= $warn) {
     echo 'WARNING: '.$out_msg.PHP_EOL;
     exit (1);
   }
