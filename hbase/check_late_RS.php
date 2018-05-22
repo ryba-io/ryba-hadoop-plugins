@@ -39,8 +39,8 @@
   $hostsList = explode(',',$hosts);
   $oldWALs = get_wals($protocol, $hostsList, $port, $path);
   if (empty($oldWALs)) {
-    echo 'CRITICAL: No oldWALs found in '.$path.PHP_EOL;
-    exit(2);
+    echo 'OK: No old WALs found in '.$path.PHP_EOL;
+    exit(0);
   }
   
   $lateWALS = array_filter($oldWALs, function($oldWAL) use ($delay) {
@@ -56,7 +56,7 @@
   
   $lateRS = array_unique(array_map("getRSName", $lateWALS));
   echo 'ERROR : RS '. join(', ', $lateRS) . ' are late'.PHP_EOL;
-  return 2;
+  exit(2);
   
   function getRSName($v) {
     $re = '/^(?<hostname>.*?)%/';
@@ -66,6 +66,6 @@
 
   /* print usage */
   function usage () {
-    echo 'Usage: hdfs/'.basename(__FILE__).' -h help -H <host> -p <port> -P <path> -f <field> -w <warn> -c <crit> [-r <ret_value> -S ssl_enabled]'.PHP_EOL;
+    echo 'Usage: hdfs/'.basename(__FILE__).' -h help -H <host> -p <port> -M <duration> -P <pathToOldWals> [-S ssl_enabled]'.PHP_EOL;
   }
 ?>
