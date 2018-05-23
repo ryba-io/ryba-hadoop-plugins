@@ -11,6 +11,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 _es_http_port = 9200
+_es_env_monit_port = 'shinken_monit_port'
 _es_health_url = '/_cluster/health'
 
 def get_containers_list(swarm_manager_url, containers_name, client_cert_path, client_cert_key_path):
@@ -32,7 +33,31 @@ def get_containers_list(swarm_manager_url, containers_name, client_cert_path, cl
                      verify=False, cert=(client_cert_path, client_cert_key_path))
     return docker_api_result
 
-def get_es_http_url_list(containers_list, ssl_enabled):
+def get_container_host_port_from_env(swarm_manager_url, container_id, env_port_name, client_cert_path, client_cert_key_path):
+    """Connect to Docker Swarm API to provide a containers list matching container's name filter
+    :param swarm_manager_url: Swarm Manager URL + Port (https://FQDN:Port)
+    :type swarm_manager_url: str
+    :param containers_name: Containers name to find ('dco' will find all containers starting with 'dco*')
+    :type containers_name: str
+    :type server_cert_path: str
+    :param client_cert_path: Path to Client Certificate
+    :type client_cert_path: str
+    :param client_cert_key_path: Path to Client Certificate Key
+    :type client_cert_key_path: str
+    :return: An HTTP Response object containing JSON formatted result or error
+    :rtype: json
+    """
+
+    docker_api_result = requests.get(url='{0}/containers/{1}/json'.format(swarm_manager_url, container_id),
+                     verify=False, cert=(client_cert_path, client_cert_key_path))
+    container_info = json.loads(docker_api_result.content)
+    env_array = filter(lambda env: env.startswith(env_port_name), container_info['Config']['Env'])
+    if not env_array:
+        return '', ''
+    else:   
+        return container_info['Node']['Name'], env_array[0].split('=')[1]
+    
+def get_es_http_url_list(containers_list, ssl_enabled, swarm_manager_url, env_port_name, client_cert_path, client_cert_key_path):
     """Find Containers with PrivatePort matching _es_http_port and build URL list to check ES health
     :param containers_list: Docker Swarm API JSON formatted result
     :type containers_list: json
@@ -40,21 +65,32 @@ def get_es_http_url_list(containers_list, ssl_enabled):
     :type ssl_enabled: bool
     :param _es_http_port: ES port used in PrivatePort for containers [default 9200]
     :type _es_http_port: int
-    :return: Dict of URLs built with strings
+    :return: Dict of URLs built with strings 
     :rtype: dict
     """
 
     es_http_urls = {}
     for container in containers_list:
         container_name = container['Names'][0]
-        for port in container['Ports']:
-            if port['PrivatePort'] == _es_http_port:
-                url = 'http'
-                if ssl_enabled:
-                    url += 's'
-                url += '://' + port['IP'] + ':' + str(port['PublicPort'])
-                es_http_urls[container_name]=url
-
+        container_id = container['Id']
+        container_port = ''
+        container_hostname = ''
+        # print container['NetworkSettings']['Networks'][0].contains('host')
+        if 'host' in container['NetworkSettings']['Networks']:
+            # We need to get the env variable of this container in order to get the port
+            container_hostname, container_port = get_container_host_port_from_env(swarm_manager_url, container_id, env_port_name, client_cert_path, client_cert_key_path)
+        else:
+            for port in container['Ports']:
+                if port['PrivatePort'] == _es_http_port:
+                    container_port = str(port['PublicPort'])
+                    container_hostname = port['IP']
+        if container_hostname != '':
+            url = 'http'
+            if ssl_enabled:
+                url += 's'
+            url += '://' + container_hostname + ':' + container_port
+            es_http_urls[container_name]=url
+ 
     return es_http_urls
 
 def get_es_cluster_health(es_http_urls, username=None, userpassword=None):
@@ -72,38 +108,38 @@ def get_es_cluster_health(es_http_urls, username=None, userpassword=None):
     for container in es_http_urls:
         main.container = container.split('/')[2]
         request_es_health = requests.get(url=es_http_urls[container] + _es_health_url,
-                                       auth=(args.username, args.userpassword))
+                                       auth=(args.username, args.userpassword), timeout=5)
         es_health_results[container] = request_es_health
     return es_health_results
 
 def main(arg):
     """Check ES cluster status in Docker containers, via ES API
-    Steps :
+    Steps : 
         - Get Container IP, Port List with _es_http_port from Docker Swarm API
         - Request ES API via es_health_url
-        - Check ES cluster status from this request
+        - Check ES cluster status from this request 
     Exit code 0 if All OK
-    Exit code 1 if Warning (ES Cluster Yellow status)
+    Exit code 1 if Warning (ES Cluster Yellow status) 
     Exit code 2 if Critical (ES Cluster Red status or unreachable)
     """
 
     url = "http"
-    if args.S:
+    if args.S: 
       url+='s'
     url+= '://' + args.swarm_manager_host + ':' +args.swarm_manager_port
     docker_api_result = get_containers_list(url, args.clustername,
                                 args.client_cert_path, args.client_cert_key_path)
 
-    if docker_api_result.status_code != 200:
+    if docker_api_result.status_code != 200: 
       raise ConnectionError
 
     containers_list = json.loads(docker_api_result.content)
-    es_http_urls = get_es_http_url_list(containers_list,args.Z)
+    es_http_urls = get_es_http_url_list(containers_list,args.Z, url, _es_env_monit_port, args.client_cert_path, args.client_cert_key_path)
     es_health_results = get_es_cluster_health(es_http_urls, args.username, args.userpassword)
 
     for container in es_health_results:
         main.container = container.split('/')[2]
-        if es_health_results[container].status_code != 200:
+        if es_health_results[container].status_code != 200: 
             raise ConnectionError(es_health_results[container])
 
         es_health = json.loads(es_health_results[container].content)
@@ -131,7 +167,7 @@ if __name__ == '__main__':
     if (args.username and not args.userpassword) or (args.userpassword and not args.username):
         parser.error("Username and user password must be provided together")
 
-    try:
+    try:    
         main(args)
 
     except UserWarning as e:
