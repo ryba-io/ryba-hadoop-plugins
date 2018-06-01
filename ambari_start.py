@@ -51,7 +51,7 @@ url = "{}/api/v1/clusters/{}/hosts/{}/host_components/{}".format(AMBARI_URL, CLU
 
 payload = { 
     "RequestInfo": {
-        "context": "Service Start {} API".format(SERVICE)
+        "context": "Service Start {} Shinken".format(SERVICE)
         },
     "HostRoles": {
         "state": "STARTED"
