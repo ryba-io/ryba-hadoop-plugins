@@ -1,0 +1,45 @@
+{
+  "AlertDefinition" : {
+    "service_name": "AMBARI",
+    "scope": "HOST",
+    "enabled": true,
+    "description": "[CUSTOM] This is a custom host-level alert which will check the Mount Point Disk Usages. Edit the '/var/lib/ambari-server/resources/host_scripts/test_alert_disk_space.py' file to change the threshold.",
+    "name": "test_disk_usage_alert",
+    "component_name": "AMBARI_AGENT",
+    "interval": 1,
+    "label": "[Custom] Host Mount Point Usage",
+    "source": {
+      "path": "test_alert_disk_space.py",
+      "type": "SCRIPT",
+      "parameters": [
+        {
+          "display_name": "Minimum Free Space",
+          "name": "minimum.free.space",
+          "value": 5000000000.0,
+          "threshold": "WARNING",
+          "units": "bytes",
+          "type": "NUMERIC",
+          "description": "The overall amount of free disk space left before an alert is triggered."
+        },
+        {
+          "display_name": "Warning",
+          "name": "percent.used.space.warning.threshold",
+          "value": 0.5,
+          "threshold": "WARNING",
+          "units": "%",
+          "type": "PERCENT",
+          "description": "The percent of disk space consumed before a warning is triggered."
+        },
+        {
+          "display_name": "Critical",
+          "name": "percent.free.space.critical.threshold",
+          "value": 0.80000000000000004,
+          "threshold": "CRITICAL",
+          "units": "%",
+          "type": "PERCENT",
+          "description": "The percent of disk space consumed before a critical alert is triggered."
+        }
+      ]
+    }
+  }
+}
