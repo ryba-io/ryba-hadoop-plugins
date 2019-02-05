@@ -40,6 +40,7 @@ elif CLUSTER == "":
     print("no cluster provided")
     sys.exit(1)
 
+time.sleep(60)
 
 date = int(time.time())
 
