@@ -49,13 +49,16 @@ def get_container_host_port_from_env(swarm_manager_url, container_id, env_port_n
     """
 
     docker_api_result = requests.get(url='{0}/containers/{1}/json'.format(swarm_manager_url, container_id),
-                     verify=False, cert=(client_cert_path, client_cert_key_path))
+                     verify=False, cert=(client_cert_path, client_cert_key_path),timeout=5)
     container_info = json.loads(docker_api_result.content)
     env_array = filter(lambda env: env.startswith(env_port_name), container_info['Config']['Env'])
     if not env_array:
         return '', ''
-    else:   
+    else:
+      if "=" in env_array[0]:
         return container_info['Node']['Name'], env_array[0].split('=')[1]
+      else:
+        return container_info['Node']['Name'], env_array[0].split(':')[1]
     
 def get_es_http_url_list(containers_list, ssl_enabled, swarm_manager_url, env_port_name, client_cert_path, client_cert_key_path):
     """Find Containers with PrivatePort matching _es_http_port and build URL list to check ES health
