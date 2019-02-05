@@ -158,7 +158,7 @@ def main(arg):
     for tablename, cfs in replicated.iteritems():
         try:
             host2_cfs = get_cf(url, tablename, args.username, args.password)
-            not_replicated_cfs = filter(lambda cf: cf in host2_cfs, cfs)
+            not_replicated_cfs = filter(lambda cf: cf not in host2_cfs['cf'], cfs)
             if not_replicated_cfs:
                 not_replicated[tablename] = not_replicated_cfs
         except TableNotFoundException as e:
