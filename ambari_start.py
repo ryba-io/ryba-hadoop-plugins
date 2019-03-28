@@ -5,6 +5,7 @@ import time
 import requests
 import json
 import base64
+import os
 
 HOST = sys.argv[1]
 STATE = sys.argv[2]
@@ -14,14 +15,15 @@ SERVICE = sys.argv[5]
 CLUSTER = sys.argv[6]
 AMBARI_URL = sys.argv[7]
 USER = sys.argv[8]
-PASSWORD = sys.argv[9]
+PASSWORD_ENV = sys.argv[9]
+PASSWORD = os.environ.get(PASSWORD_ENV)
 
 if STATE != 'CRITICAL':
     print("Not critical. Nothing to do")
     sys.exit(0)
 
-if ATTEMPT != "2":
-    print("waiting for 2nd attempt. Nothing to do")
+if not ((ATTEMPT == "2") or (ATTEMPT == "3")):
+    print("Not doing anything on first attempt")
     sys.exit(0)
     
 if HOST == "":
